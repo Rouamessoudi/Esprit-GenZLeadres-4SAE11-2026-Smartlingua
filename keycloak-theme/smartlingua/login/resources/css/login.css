@@ -1,0 +1,219 @@
+/* SmartLingua – thème Keycloak = même thème que l'app (PatternFly 5 / pf-v5) */
+
+:root {
+  --primary: #6C5CE7;
+  --primary-light: #a29bfe;
+  --primary-dark: #4834d4;
+  --gradient-hero: linear-gradient(135deg, #0c0c1d 0%, #1e1e3f 50%, #2d1b69 100%);
+  --card-bg: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --text: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.7);
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Override PatternFly 5 primary = violet SmartLingua */
+  --pf-v5-global--primary-color--100: #6C5CE7 !important;
+  --pf-v5-global--primary-color--200: #a29bfe !important;
+  --pf-v5-global--link--Color: #a29bfe !important;
+  --pf-v5-global--link--Color--hover: #6C5CE7 !important;
+}
+
+/* Fond de page (Keycloak met id sur body) */
+#keycloak-bg,
+html,
+body {
+  background: var(--gradient-hero) !important;
+  background-image: var(--gradient-hero) !important;
+  background-color: #0c0c1d !important;
+  font-family: var(--font) !important;
+  color: var(--text) !important;
+  min-height: 100vh !important;
+}
+
+/* Header SMARTLingua = grand et stylé */
+#kc-header-wrapper,
+.pf-v5-c-brand {
+  color: var(--text) !important;
+}
+
+#kc-header-wrapper,
+#kc-header-wrapper *,
+.pf-v5-c-brand,
+.pf-v5-c-brand * {
+  font-size: 2.2rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: none !important;
+}
+
+/* Option : dégradé sur le nom (Smart + Lingua) */
+#kc-header-wrapper img + span,
+.pf-v5-c-brand__brand {
+  background: linear-gradient(135deg, #fff 0%, #a29bfe 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: #fff !important;
+}
+
+/* Carte de login = style frosted (PatternFly 5) */
+#kc-content,
+.pf-v5-c-login__main,
+.pf-v5-c-login,
+[class*="pf-v5-c-login"] {
+  background: var(--card-bg) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Anciennes classes pf-c- (au cas où) */
+#kc-header-wrapper,
+#kc-content,
+#kc-form-login,
+.kc-loginpage,
+.pf-c-login__container,
+.pf-c-login__main,
+[class*="pf-c-login"],
+[class*="login-pf"] .container,
+[class*="card-pf"] {
+  background: var(--card-bg) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Titres */
+#kc-header,
+#kc-page-title,
+.kc-login-title,
+.pf-v5-c-title,
+.pf-c-title,
+.pf-v5-c-login__header,
+.pf-c-login__header,
+h1, h2, h3 {
+  color: var(--text) !important;
+  font-weight: 800 !important;
+}
+
+/* Bouton Sign In = VIOLET + largeur réduite (pas toute la ligne) */
+.pf-v5-c-button.pf-m-primary,
+button.pf-v5-c-button.pf-m-primary,
+#kc-login,
+#kc-form-buttons input,
+input[type="submit"],
+button[type="submit"],
+.pf-c-button.pf-m-primary,
+.pf-c-button[type="submit"],
+button.pf-c-button,
+[class*="pf-m-primary"],
+[class*="btn-primary"] {
+  background: var(--primary) !important;
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  width: auto !important;
+  min-width: 140px !important;
+  max-width: 220px !important;
+  display: inline-block !important;
+}
+
+/* Conteneur du bouton : centrer sans étirer */
+#kc-form-buttons,
+.pf-v5-c-login__main-footer,
+[class*="form-buttons"] {
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.pf-v5-c-button.pf-m-primary:hover,
+button.pf-v5-c-button.pf-m-primary:hover,
+#kc-login:hover,
+#kc-form-buttons input:hover,
+input[type="submit"]:hover,
+button[type="submit"]:hover,
+.pf-c-button.pf-m-primary:hover,
+[class*="pf-m-primary"]:hover {
+  background: var(--primary-light) !important;
+  background-color: var(--primary-light) !important;
+  border-color: var(--primary-light) !important;
+}
+
+/* Liens = violet (PF5 + classiques) */
+.pf-v5-c-login__main-footer-links a,
+.pf-v5-c-button.pf-m-link,
+a.pf-v5-c-button,
+#kc-registration span a,
+#kc-form-options a,
+.pf-c-login__main-footer-links a,
+a.pf-c-button,
+.pf-v5-c-login a,
+.pf-v5-c-form__group a,
+a[href] {
+  color: var(--primary-light) !important;
+}
+
+.pf-v5-c-login a:hover,
+a:hover {
+  color: var(--primary) !important;
+}
+
+/* Champs */
+.pf-v5-c-form-control,
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: 8px !important;
+  color: var(--text) !important;
+  font-family: var(--font) !important;
+}
+
+input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+input:focus,
+.pf-v5-c-form-control:focus {
+  border-color: var(--primary) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.4) !important;
+}
+
+/* Labels */
+.pf-v5-c-form__label,
+label,
+.pf-c-form__label {
+  color: var(--text) !important;
+  font-weight: 500 !important;
+}
+
+input[type="checkbox"] {
+  accent-color: var(--primary) !important;
+}
+
+.alert-error,
+.pf-m-error,
+.kc-feedback-text {
+  color: #ff6b6b !important;
+}
+
+#kc-info-wrapper,
+.pf-v5-c-login__main-footer-band,
+.pf-c-login__main-footer-band {
+  color: var(--text-muted) !important;
+}
+
+[style*="rgb(0, 112, 210)"],
+[style*="#0066cc"],
+[style*="#0066CC"] {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff !important;
+}
