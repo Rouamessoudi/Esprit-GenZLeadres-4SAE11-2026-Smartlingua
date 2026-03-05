@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="quiz" />
+        <module name="courses" />
+        <module name="privetcours" />
+        <module name="eureka" />
+        <module name="users" />
+        <module name="messaging" />
+        <module name="forum" />
+        <module name="notification" />
+        <module name="config-server" />
+        <module name="exams" />
+        <module name="apiGateway" />
+        <module name="Job" />
+        <module name="meeting" />
+        <module name="gateway" />
+        <module name="condidature" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="candidat" target="17" />
+      <module name="demo" target="17" />
+      <module name="job" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="Job" options="-parameters" />
+      <module name="apiGateway" options="-parameters" />
+      <module name="candidat" options="-parameters" />
+      <module name="condidature" options="-parameters" />
+      <module name="config-server" options="-parameters" />
+      <module name="courses" options="-parameters" />
+      <module name="demo" options="-parameters" />
+      <module name="eureka" options="-parameters" />
+      <module name="exams" options="-parameters" />
+      <module name="forum" options="" />
+      <module name="gateway" options="-parameters" />
+      <module name="job" options="-parameters" />
+      <module name="meeting" options="-parameters" />
+      <module name="messaging" options="" />
+      <module name="notification" options="-parameters" />
+      <module name="privetcours" options="" />
+      <module name="quiz" options="" />
+      <module name="users" options="" />
+    </option>
+  </component>
+</project>

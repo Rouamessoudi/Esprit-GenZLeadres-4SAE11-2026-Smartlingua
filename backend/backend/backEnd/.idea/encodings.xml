@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/apiGateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/config-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/eureka/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/microservices/candidat/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/microservices/condidature/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/microservices/courses/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/microservices/demo/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/microservices/exams/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/microservices/forum/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/microservices/job/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/microservices/meeting/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/microservices/messaging/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/microservices/notification/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/microservices/privetcours/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/microservices/quiz/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/microservices/users/src/main/java" charset="UTF-8" />
+  </component>
+</project>

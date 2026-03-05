@@ -1,0 +1,25 @@
+# Base commune SmartLingua : Keycloak + MySQL
+# Lancer à la racine du projet : docker compose -f backend/docker-compose.yml up -d
+# Keycloak admin : http://localhost:8081 (admin / admin)
+# MySQL : localhost:3306, user=smartlingua, password=smartlingua, database=smartlingua
+
+services:
+  keycloak:
+    image: keycloak/keycloak:latest
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: start-dev
+    ports:
+      - "8081:8080"
+
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: smartlingua
+      MYSQL_USER: smartlingua
+      MYSQL_PASSWORD: smartlingua
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
