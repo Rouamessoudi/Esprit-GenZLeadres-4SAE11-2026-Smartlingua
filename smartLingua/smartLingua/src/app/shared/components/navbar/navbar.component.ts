@@ -24,6 +24,7 @@ import { KeycloakService } from 'keycloak-angular';
           <ul class="nav-links">
             <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Home</a></li>
             <li><a routerLink="/courses" routerLinkActive="active" (click)="closeMenu()">Courses</a></li>
+            <li><a routerLink="/forum" routerLinkActive="active" (click)="closeMenu()">Forum</a></li>
             <li><a href="#features" (click)="closeMenu()">Features</a></li>
             <li><a href="#about" (click)="closeMenu()">About</a></li>
           </ul>

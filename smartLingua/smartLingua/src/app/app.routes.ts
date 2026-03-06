@@ -24,6 +24,26 @@ export const routes: Routes = [
                 loadComponent: () =>
                     import('./front-office/auth/signup/signup.component').then(m => m.SignupComponent),
             },
+            {
+                path: 'forum',
+                children: [
+                    {
+                        path: '',
+                        loadComponent: () =>
+                            import('./front-office/forum/forum-list/forum-list.component').then(m => m.ForumListComponent),
+                    },
+                    {
+                        path: 'new',
+                        loadComponent: () =>
+                            import('./front-office/forum/post-create/post-create.component').then(m => m.PostCreateComponent),
+                    },
+                    {
+                        path: ':id',
+                        loadComponent: () =>
+                            import('./front-office/forum/post-detail/post-detail.component').then(m => m.PostDetailComponent),
+                    },
+                ],
+            },
         ],
     },
     {
