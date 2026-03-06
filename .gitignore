@@ -37,3 +37,4 @@ Thumbs.db
 .env.local
 *.db
 *.trace.db
+GITHUB-URL.txt
