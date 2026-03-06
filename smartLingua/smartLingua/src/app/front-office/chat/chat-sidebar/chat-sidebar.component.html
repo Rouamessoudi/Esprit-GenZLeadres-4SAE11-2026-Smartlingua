@@ -1,0 +1,143 @@
+<aside class="chat-sidebar">
+  <header class="sidebar-header">
+    <h2 class="sidebar-title">Chats</h2>
+  </header>
+
+  <div class="search-wrap">
+    <span class="material-icons-round search-icon">search</span>
+    <input
+      type="text"
+      class="search-input"
+      [(ngModel)]="search"
+      (ngModelChange)="onSearch()"
+      placeholder="Rechercher"
+      aria-label="Rechercher des conversations"
+    />
+  </div>
+
+  <div class="tabs">
+    <button
+      type="button"
+      class="tab"
+      [class.active]="activeTab === 'all'"
+      (click)="tabChange.emit('all')"
+    >
+      Tous
+    </button>
+    <button
+      type="button"
+      class="tab tab-invitations"
+      [class.active]="activeTab === 'invitations'"
+      (click)="tabChange.emit('invitations')"
+    >
+      Invitations
+      @if (pendingInvitationsCount > 0) {
+        <span class="tab-badge">{{ pendingInvitationsCount > 99 ? '99+' : pendingInvitationsCount }}</span>
+      }
+    </button>
+  </div>
+
+  <div class="list-wrap">
+    @if (activeTab === 'invitations') {
+      <p class="label">Invitations reçues</p>
+      @for (inv of pendingInvitations; track inv.id) {
+        <div class="invitation-item">
+          <span class="conv-body">
+            <span class="conv-name">{{ getSenderName(inv) }}</span>
+            <span class="invitation-type">{{ inv.invitationType }}</span>
+            <span class="invitation-message">{{ inv.message || 'Souhaite discuter avec toi.' }}</span>
+            <span class="invitation-date">{{ formatInvitationDate(inv.createdAt) }}</span>
+          </span>
+          <span class="invitation-actions">
+            <button type="button" class="btn-invitation btn-accept" (click)="acceptInvitation.emit(inv)" title="Accepter">
+              Accepter
+            </button>
+            <button type="button" class="btn-invitation btn-reject" (click)="rejectInvitation.emit(inv)" title="Refuser">
+              Refuser
+            </button>
+          </span>
+        </div>
+      }
+      @if (pendingInvitations.length === 0) {
+        <p class="empty">Aucune invitation en attente.</p>
+      }
+    } @else if (showUserList || search.trim()) {
+      <p class="label">{{ search.trim() ? 'Résultats pour « ' + search.trim() + ' »' : 'Choisir un utilisateur' }}</p>
+      @for (u of filteredUsers(); track u.id) {
+        <div class="conv-item-row">
+          <button type="button" class="conv-item conv-item-main" (click)="openChatWithUser.emit(u)">
+            <span class="avatar-wrap">
+              <span class="avatar">{{ u.username.charAt(0).toUpperCase() }}</span>
+              @if (presence.isOnline(u.id)) {
+                <span class="online-dot" aria-label="En ligne"></span>
+              }
+            </span>
+            <span class="conv-body">
+              <span class="conv-name">
+                @if (u.role === 'teacher') {
+                  <span class="teacher-badge" aria-label="Enseignant">👨‍🏫</span>
+                }
+                {{ u.username }}
+              </span>
+              <span class="conv-preview">{{ u.email }}</span>
+            </span>
+          </button>
+          <span class="call-buttons">
+            <button type="button" class="btn-call-mini btn-audio" (click)="startCall.emit({ user: u, video: false }); $event.stopPropagation()" title="Appel audio">📞</button>
+            <button type="button" class="btn-call-mini btn-video" (click)="startCall.emit({ user: u, video: true }); $event.stopPropagation()" title="Appel vidéo">🎥</button>
+          </span>
+          @if (sentInvitationToUserIds.includes(u.id)) {
+            <span class="btn-invite-success" title="Invitation envoyée">
+              <span class="material-icons-round icon-success">check_circle</span>
+            </span>
+          } @else {
+            <button type="button" class="btn-invite-user" (click)="sendInvitation.emit(u); $event.stopPropagation()" title="Ajouter ami">
+              <span class="material-icons-round icon-invite">person_add</span>
+            </button>
+          }
+        </div>
+      }
+      @if (filteredUsers().length === 0 && usersLoaded) {
+        <p class="empty">{{ search.trim() ? 'Aucun utilisateur trouvé pour « ' + search.trim() + ' ».' : 'Aucun autre utilisateur.' }}</p>
+      }
+    } @else {
+      @for (c of filteredConversations(); track c.id) {
+        <button
+          type="button"
+          class="conv-item"
+          [class.active]="selectedConversation?.id === c.id"
+          (click)="selectConversation.emit(c)"
+        >
+          <span class="avatar-wrap">
+            <span class="avatar">{{ getOtherUser(c) ? getOtherUser(c)!.username.charAt(0).toUpperCase() : '?' }}</span>
+            @if (getOtherUser(c) && presence.isOnline(getOtherUser(c)!.id)) {
+              <span class="online-dot" aria-label="En ligne"></span>
+            }
+          </span>
+          <span class="conv-body">
+            <span class="conv-name">
+              @if (getOtherUser(c)?.role === 'teacher') {
+                <span class="teacher-badge" aria-label="Enseignant">👨‍🏫</span>
+              }
+              {{ getOtherName(c) }}
+            </span>
+            <span class="conv-preview">{{ c.lastMessagePreview || 'Aucun message' }}</span>
+          </span>
+          <span class="conv-meta">
+            <span class="conv-time">{{ formatTime(c.lastMessageAt) }}</span>
+            @if ((c.unreadCount ?? 0) > 0) {
+              <span class="unread-badge">{{ c.unreadCount! > 99 ? '99+' : c.unreadCount }}</span>
+            }
+          </span>
+        </button>
+      }
+      @if (filteredConversations().length === 0 && convsLoaded && !showUserList && !search.trim()) {
+        <p class="empty">Aucune conversation. Clique sur « Nouvelle conversation » ou cherche un utilisateur par nom ci‑dessus.</p>
+      }
+    }
+  </div>
+
+  <button type="button" class="btn-new-conv" (click)="toggleUserList.emit()">
+    {{ showUserList ? 'Annuler' : '+ Nouvelle conversation' }}
+  </button>
+</aside>

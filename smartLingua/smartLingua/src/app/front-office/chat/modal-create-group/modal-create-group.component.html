@@ -1,0 +1,79 @@
+<div
+  class="modal-backdrop"
+  (click)="onBackdropClick($event)"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="modal-create-group-title"
+>
+  <div class="modal" (keydown.escape)="onCancel()">
+    <header class="modal-header">
+      <h2 id="modal-create-group-title">Créer un groupe</h2>
+      <button type="button" class="btn-close" (click)="onCancel()" aria-label="Fermer">
+        <span class="material-icons-round">close</span>
+      </button>
+    </header>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="group-name">Nom du groupe</label>
+        <input
+          id="group-name"
+          type="text"
+          class="form-input"
+          [(ngModel)]="groupName"
+          name="groupName"
+          placeholder="ex. Groupe projet 2024"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Membres</label>
+        <div class="search-wrap">
+          <span class="material-icons-round search-icon">search</span>
+          <input
+            type="text"
+            class="form-input search-input"
+            [(ngModel)]="search"
+            name="search"
+            placeholder="Rechercher des utilisateurs..."
+          />
+        </div>
+        <div class="member-list">
+          @for (u of filteredUsers(); track u.id) {
+            <button
+              type="button"
+              class="member-item"
+              [class.selected]="isSelected(u.id)"
+              (click)="toggle(u.id)"
+            >
+              <span class="avatar">{{ u.username.charAt(0).toUpperCase() }}</span>
+              <span class="member-name">
+                @if (u.role === 'teacher') {
+                  <span class="teacher-badge" aria-label="Enseignant">👨‍🏫</span>
+                }
+                {{ u.username }}
+              </span>
+              @if (isSelected(u.id)) {
+                <span class="material-icons-round check">check_circle</span>
+              }
+            </button>
+          }
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()">
+          Annuler
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="!groupName.trim() || selectedIds.size === 0 || loading"
+        >
+          {{ loading ? 'Création…' : 'Créer le groupe' }}
+        </button>
+      </footer>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,57 @@
+@if (!selectedConversation) {
+  <div class="no-selection">
+    <span class="material-icons-round icon">chat_bubble_outline</span>
+    <p>Sélectionne une conversation ou démarre-en une nouvelle.</p>
+  </div>
+} @else {
+  <header class="chat-window-header">
+    <span class="avatar-wrap">
+      <span class="avatar">{{ getOtherUser(selectedConversation) ? getOtherUser(selectedConversation)!.username.charAt(0).toUpperCase() : '?' }}</span>
+      @if (getOtherUser(selectedConversation) && presence.isOnline(getOtherUser(selectedConversation)!.id)) {
+        <span class="online-dot" aria-label="En ligne"></span>
+      }
+    </span>
+    <div class="header-info">
+      <span class="name">
+        @if (getOtherUser(selectedConversation)?.role === 'teacher') {
+          <span class="teacher-badge" aria-label="Enseignant">👨‍🏫</span>
+        }
+        {{ getOtherName(selectedConversation) }}
+      </span>
+      <span class="status">
+        @if (getOtherUser(selectedConversation) && presence.isOnline(getOtherUser(selectedConversation)!.id)) {
+          <span class="status-dot"></span> En ligne
+        } @else {
+          Hors ligne
+        }
+      </span>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn-icon" aria-label="Appel audio" (click)="onAudioCall()"><span class="material-icons-round">call</span></button>
+      <button type="button" class="btn-icon" aria-label="Appel vidéo" (click)="onVideoCall()"><span class="material-icons-round">videocam</span></button>
+      <button type="button" class="btn-icon" aria-label="Infos" (click)="openInfo.emit()"><span class="material-icons-round">info_outline</span></button>
+      <div class="menu-wrap">
+        <button type="button" class="btn-icon" aria-label="Menu" (click)="toggleMenu(); $event.stopPropagation()"><span class="material-icons-round">more_vert</span></button>
+        @if (menuOpen) {
+          <div class="dropdown-menu" (click)="$event.stopPropagation()">
+            <button type="button" class="menu-item" (click)="onBlockClick()">
+              {{ isOtherBlocked ? 'Débloquer' : 'Bloquer' }}
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </header>
+
+  <div class="messages-box" #messagesBox>
+    @for (m of messages; track m.id) {
+      <app-message-bubble [message]="m" [currentUserId]="currentUserId" />
+    }
+  </div>
+
+  <app-chat-composer
+    [disabled]="sending"
+    (sendMessage)="sendMessage.emit($event)"
+    (sendAttachments)="sendAttachments.emit($event)"
+  />
+}

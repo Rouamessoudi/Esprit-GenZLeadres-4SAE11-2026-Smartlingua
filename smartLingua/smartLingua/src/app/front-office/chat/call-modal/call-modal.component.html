@@ -1,0 +1,61 @@
+@if (showModal && state) {
+  <div class="call-overlay" (click)="state.status === 'ended' ? closeEnded() : null">
+    <div class="call-modal" (click)="$event.stopPropagation()" [class.ended]="state.status === 'ended'">
+      <div class="call-header">
+        <span class="call-status">{{ statusLabel }}</span>
+        @if (state.status === 'inCall') {
+          <span class="call-duration">{{ formatDuration(callDurationSeconds) }}</span>
+        }
+        @if (state.remoteUsername) {
+          <span class="call-remote-name">{{ state.remoteUsername }}</span>
+        } @else if (state.remoteUserId) {
+          <span class="call-remote-name">Utilisateur #{{ state.remoteUserId }}</span>
+        }
+      </div>
+
+      @if (canShowVideos) {
+        <div class="call-videos">
+          <div class="video-wrap local">
+            <video #localVideo autoplay playsinline muted class="video-el"></video>
+            <span class="video-label">Toi</span>
+            @if (state.cameraOff) {
+              <div class="video-placeholder">Caméra désactivée</div>
+            }
+          </div>
+          <div class="video-wrap remote">
+            <video #remoteVideo autoplay playsinline class="video-el"></video>
+            <span class="video-label">À distance</span>
+            @if (state.status === 'calling' || (state.status === 'ringing' && state.outgoing)) {
+              <div class="video-placeholder">En attente…</div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (state.status === 'ended') {
+        <p class="ended-message">{{ endedLabel }}</p>
+      }
+
+      <div class="call-actions">
+        @if (isRingingIncoming) {
+          <button type="button" class="btn-call btn-accept" (click)="accept()">Accepter</button>
+          <button type="button" class="btn-call btn-reject" (click)="reject()">Refuser</button>
+        } @else if (state.status === 'calling' || state.status === 'ringing' || isInCall) {
+          @if (isInCall) {
+            <button type="button" class="btn-call btn-mic" [class.muted]="state.micMuted" (click)="toggleMic()" title="{{ state.micMuted ? 'Activer le micro' : 'Couper le micro' }}">
+              {{ state.micMuted ? '🎤' : '🎤' }}
+            </button>
+            @if (state.videoEnabled) {
+              <button type="button" class="btn-call btn-cam" [class.off]="state.cameraOff" (click)="toggleCamera()" title="{{ state.cameraOff ? 'Activer la caméra' : 'Couper la caméra' }}">
+                {{ state.cameraOff ? '📷' : '📷' }}
+              </button>
+            }
+          }
+          <button type="button" class="btn-call btn-hangup" (click)="hangUp()" title="Raccrocher">Raccrocher</button>
+        } @else if (state.status === 'ended') {
+          <button type="button" class="btn-call btn-close" (click)="closeEnded()">Fermer</button>
+        }
+      </div>
+    </div>
+  </div>
+}

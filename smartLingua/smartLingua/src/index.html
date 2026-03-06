@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SmartLingua — Learn English Smarter</title>
+  <meta name="description" content="SmartLingua is a modern English learning platform with courses, quizzes, and interactive resources.">
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    // Polyfill pour les libs (ex. sockjs-client) qui utilisent "global" (Node) dans le navigateur
+    window.global = window.global ?? window;
+  </script>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+</head>
+<body>
+  <app-root></app-root>
+  <noscript>Active JavaScript pour utiliser SmartLingua.</noscript>
+  <div id="app-loading" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;font-family:sans-serif;font-size:18px;color:#333;z-index:99999;">
+    Chargement…
+  </div>
+</body>
+</html>

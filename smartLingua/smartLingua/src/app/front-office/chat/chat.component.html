@@ -1,0 +1,82 @@
+<div class="chat-page">
+  <header class="page-header">
+    <div class="header-row">
+      <div>
+        <h1>Chat</h1>
+        <p class="welcome">
+          Bienvenue,
+          @if (isTeacher) {
+            <span class="teacher-icon" aria-label="Enseignant">👨‍🏫</span>
+          }
+          <strong>{{ username }}</strong>.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  @if (errorBackend) {
+    <p class="error-msg">{{ errorBackend }}</p>
+  }
+  @if (wsConnectionStatus === 'CONNECTING' && !errorBackend) {
+    <p class="ws-reconnect">Reconnexion au serveur en cours…</p>
+  }
+  <div class="chat-layout">
+      <app-chat-sidebar
+        [currentUserId]="currentUserId"
+        [users]="users"
+        [conversations]="filteredConversations"
+        [selectedConversation]="selectedConversation"
+        [showUserList]="showUserList"
+        [usersLoaded]="usersLoaded"
+        [convsLoaded]="convsLoaded"
+        [activeTab]="activeTab"
+        [pendingInvitations]="pendingInvitations"
+        [pendingInvitationsCount]="pendingInvitationsCount"
+        [sentInvitationToUserIds]="sentInvitationToUserIds"
+        (tabChange)="onTabChange($event)"
+        (createGroup)="onOpenCreateGroup()"
+        (selectConversation)="onSelectConversation($event)"
+        (startConversation)="onStartConversation($event)"
+        (openChatWithUser)="onOpenChatWithUser($event)"
+        (toggleUserList)="showUserList = !showUserList"
+        (acceptInvitation)="onAcceptInvitation($event)"
+        (rejectInvitation)="onRejectInvitation($event)"
+        (sendInvitation)="onSendInvitation($event)"
+        (startCall)="onStartCall($event)"
+      />
+      <div class="chat-main-wrap">
+        <app-chat-window
+          [currentUserId]="currentUserId"
+          [users]="users"
+          [selectedConversation]="selectedConversation"
+          [messages]="messages"
+          [sending]="sending"
+          [isOtherBlocked]="isOtherBlocked"
+          (sendMessage)="onSendMessage($event)"
+          (sendAttachments)="onSendAttachments($event)"
+          (startCall)="onStartCall($event)"
+          (openInfo)="onOpenInfo()"
+          (blockUser)="onBlockUser($event)"
+        />
+      </div>
+    </div>
+
+  <div class="chat-actions">
+    <a routerLink="/" class="btn-link">← Accueil</a>
+    <a routerLink="/courses" class="btn-link">Voir les cours</a>
+    <button type="button" class="btn-link btn-logout-inline" (click)="onLogout()">
+      Déconnexion
+    </button>
+  </div>
+</div>
+
+@if (showCreateGroupModal) {
+  <app-modal-create-group
+    [users]="users"
+    [currentUserId]="currentUserId"
+    [loading]="createGroupLoading"
+    (create)="onCreateGroup($event)"
+    (cancel)="onCancelCreateGroup()"
+  />
+}
+<app-call-modal />
