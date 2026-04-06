@@ -1,5 +1,6 @@
 package com.esprit.courses.entities;
 
+import com.esprit.courses.entities.enums.SeanceStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -17,6 +18,9 @@ public class Seance {
     private LocalDateTime startDateTime;
 
     private Integer durationMinutes;
+
+    @Enumerated(EnumType.STRING)
+    private SeanceStatus status = SeanceStatus.PLANNED;
 
     private String description;
 
@@ -38,6 +42,7 @@ public class Seance {
     public String getTitle() {
         return title;
     }
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -56,6 +61,14 @@ public class Seance {
 
     public void setDurationMinutes(Integer durationMinutes) {
         this.durationMinutes = durationMinutes;
+    }
+
+    public SeanceStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(SeanceStatus status) {
+        this.status = status;
     }
 
     public String getDescription() {
