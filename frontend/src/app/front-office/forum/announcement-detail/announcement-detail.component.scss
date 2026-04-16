@@ -1,0 +1,66 @@
+.announcement-detail {
+  padding: 40px 0 80px;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.announcement-card.detail {
+  position: relative;
+  padding: 40px;
+  background: linear-gradient(135deg, rgba(253, 203, 110, 0.08) 0%, rgba(255, 248, 225, 0.5) 100%);
+  border: 2px solid rgba(253, 203, 110, 0.3);
+  border-radius: var(--radius-md);
+
+  h1 {
+    font-size: 2rem;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+
+  .content {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-light);
+    white-space: pre-wrap;
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .badge.inactive {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+  }
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+}
+
+.error {
+  color: var(--danger);
+}

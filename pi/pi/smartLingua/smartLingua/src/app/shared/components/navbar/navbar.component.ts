@@ -1,0 +1,92 @@
+import { Component, OnInit } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { KeycloakService } from 'keycloak-angular';
+import { environment } from '../../../../environments/environment';
+
+
+@Component({
+  selector: 'app-navbar',
+  standalone: true,
+  imports: [RouterLink, RouterLinkActive, CommonModule],
+  template: `
+    <nav class="navbar">
+      <div class="navbar-inner container">
+        <a routerLink="/" class="logo">
+          <span class="logo-icon material-icons-round">translate</span>
+          <span class="logo-text">Smart<span class="logo-accent">Lingua</span></span>
+        </a>
+
+        <button class="mobile-toggle" (click)="toggleMenu()" [class.active]="menuOpen">
+          <span></span><span></span><span></span>
+        </button>
+
+        <div class="nav-menu" [class.open]="menuOpen">
+          <ul class="nav-links">
+            <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Home</a></li>
+            <li><a routerLink="/courses" routerLinkActive="active" (click)="closeMenu()">Courses</a></li>
+            <li><a routerLink="/forum" routerLinkActive="active" (click)="closeMenu()">Forum</a></li>
+            <li><a routerLink="/announcements" routerLinkActive="active" (click)="closeMenu()">Annonces</a></li>
+            <li><a href="#features" (click)="closeMenu()">Features</a></li>
+            <li><a href="#about" (click)="closeMenu()">About</a></li>
+          </ul>
+          <div class="nav-actions">
+            @if (showAdminLink) {
+              <a routerLink="/admin" (click)="closeMenu()" class="btn btn-secondary btn-sm">
+                <span class="material-icons-round" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">admin_panel_settings</span>
+                Admin Panel
+              </a>
+            }
+            @if (isLoggedIn) {
+              <span class="nav-username">
+                <span class="material-icons-round" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">person</span>
+                {{ username }}
+              </span>
+              <button (click)="logout()" class="btn btn-primary btn-sm">
+                <span class="material-icons-round" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">logout</span>
+                Logout
+              </button>
+            } @else {
+              <button (click)="login()" class="btn btn-primary btn-sm">Sign In</button>
+            }
+          </div>
+        </div>
+      </div>
+    </nav>
+  `,
+  styleUrl: './navbar.component.scss'
+})
+export class NavbarComponent implements OnInit {
+  menuOpen = false;
+  isLoggedIn = false;
+  isAdmin = false;
+  username = '';
+  showAdminLink = false;
+
+  constructor(private keycloakService: KeycloakService) { }
+
+  ngOnInit() {
+    this.isLoggedIn = this.keycloakService.isLoggedIn();
+    if (this.isLoggedIn) {
+      this.username = this.keycloakService.getUsername();
+      this.isAdmin = this.keycloakService.getUserRoles().includes('admin');
+    }
+    this.showAdminLink = environment.devBypassAuth || (this.isLoggedIn && this.isAdmin);
+  }
+
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  closeMenu() {
+    this.menuOpen = false;
+  }
+
+  login() {
+    this.keycloakService.login({ redirectUri: window.location.origin + '/' });
+  }
+
+  logout() {
+    this.keycloakService.logout(window.location.origin + '/');
+  }
+}

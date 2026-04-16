@@ -1,0 +1,141 @@
+.notifications-page {
+  padding: 40px 0 80px;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 30px;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: var(--text-light);
+  }
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+
+  select {
+    min-width: 180px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text);
+  }
+}
+
+.checkbox-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-light);
+}
+
+.list {
+  display: grid;
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 16px;
+
+  &.unread {
+    border-left: 4px solid var(--primary);
+  }
+}
+
+.card-main h3 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.tag {
+  background: rgba(108, 92, 231, 0.1);
+  color: var(--primary);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.tag-priority {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-weight: 600;
+
+  &.high {
+    background: rgba(220, 53, 69, 0.15);
+    color: #b4232d;
+  }
+  &.medium {
+    background: rgba(253, 126, 20, 0.15);
+    color: #b35d00;
+  }
+  &.low {
+    background: rgba(40, 167, 69, 0.15);
+    color: #207245;
+  }
+}
+
+.badge-unread {
+  color: #fff;
+  background: var(--danger, #e17055);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.message {
+  margin: 0;
+  color: var(--text-light);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+
+.btn-danger {
+  background: #c0392b;
+  color: #fff;
+}
+
+.loading, .error, .empty {
+  text-align: center;
+  padding: 30px;
+}
+
+.error {
+  color: var(--danger);
+}
+
+.empty-icon {
+  font-size: 48px;
+  color: var(--text-muted);
+}

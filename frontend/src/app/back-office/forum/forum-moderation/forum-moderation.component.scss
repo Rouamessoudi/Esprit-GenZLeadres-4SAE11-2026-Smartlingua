@@ -1,0 +1,122 @@
+.moderation-page {
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 32px;
+
+  h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+}
+
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.post-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 24px;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--danger, #e17055);
+
+  .post-content {
+    flex: 1;
+    min-width: 0;
+
+    h3 {
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .post-meta {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+
+      .category {
+        background: rgba(108, 92, 231, 0.1);
+        padding: 4px 10px;
+        border-radius: 16px;
+        margin-right: 10px;
+        color: var(--primary);
+      }
+
+      .badge-flagged {
+        margin-left: 8px;
+        padding: 2px 8px;
+        background: rgba(225, 112, 85, 0.15);
+        color: var(--danger, #e17055);
+        border-radius: 12px;
+        font-size: 0.75rem;
+      }
+    }
+
+    .post-body {
+      color: var(--text-light);
+      line-height: 1.5;
+      margin: 0 0 12px;
+    }
+
+    .post-stats {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+  }
+
+  .post-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+  }
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+}
+
+.error {
+  color: var(--danger);
+  background: rgba(225, 112, 85, 0.1);
+  border-radius: var(--radius-md);
+}
+
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+
+  .empty-icon {
+    font-size: 64px;
+    color: var(--success);
+    margin-bottom: 16px;
+    opacity: 0.7;
+  }
+
+  p {
+    color: var(--text-light);
+  }
+}

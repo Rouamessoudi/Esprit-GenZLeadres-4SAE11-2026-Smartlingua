@@ -1,0 +1,130 @@
+.course-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    transition: var(--transition);
+
+    &:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-lg);
+
+        .card-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+    }
+}
+
+.card-header {
+    padding: 28px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: -20px;
+        right: -20px;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+    }
+}
+
+.card-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+
+    .material-icons-round {
+        font-size: 1.6rem;
+        color: #fff;
+    }
+}
+
+.card-body {
+    padding: 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 8px;
+        line-height: 1.4;
+    }
+
+    p {
+        font-size: 0.88rem;
+        color: var(--text-light);
+        line-height: 1.6;
+        margin-bottom: 16px;
+        flex: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}
+
+.card-meta {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--text-light);
+
+    .material-icons-round {
+        font-size: 1rem;
+        color: var(--text-muted);
+    }
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+
+    .star {
+        font-size: 1.1rem;
+        color: #f1c40f;
+    }
+}
+
+.students {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
