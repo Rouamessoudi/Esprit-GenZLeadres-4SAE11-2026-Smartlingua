@@ -1,9 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CourseCardComponent, Course } from '../course-card/course-card.component';
 import { FormsModule } from '@angular/forms';
-import { CourseApiService, CourseDto, CourseLevel, SeanceWithCourseDto } from '../../../core/services/course-api.service';
+import { CourseApiService, CourseDto, CourseLevel, ResourceDto, SeanceWithCourseDto } from '../../../core/services/course-api.service';
+import { AdaptiveApiService, CourseCoachInsightDto } from '../../../core/services/adaptive-api.service';
+import { AdaptiveModuleService } from '../../../core/services/adaptive-module.service';
 import { KeycloakService } from 'keycloak-angular';
+import { canAccessCourseByCefr } from '../../../core/cefr-levels';
+import { UserSyncService } from '../../../core/user-sync.service';
+import { AuthService } from '../../../core/auth.service';
+import { readApiErrorMessage } from '../../../core/http-error.util';
 
 /** Niveaux API (A1–C2) vers libellés affichés */
 const LEVEL_TO_LABEL: Record<CourseLevel, 'Beginner' | 'Intermediate' | 'Advanced'> = {
@@ -37,6 +43,85 @@ const LEVEL_ORDER: Record<string, number> = {
     imports: [CourseCardComponent, FormsModule, RouterLink],
     template: `
     <section class="courses-page">
+      @if (coachModalOpen) {
+        <div class="coach-overlay" (click)="closeCoach()" role="presentation"></div>
+        <div class="coach-panel" role="dialog" aria-labelledby="coach-dialog-title">
+          <div class="coach-panel-head">
+            <h2 id="coach-dialog-title">
+              <span class="material-icons-round coach-spark">auto_awesome</span>
+              Conseil du coach IA
+            </h2>
+            <button type="button" class="coach-close" (click)="closeCoach()" aria-label="Fermer">
+              <span class="material-icons-round">close</span>
+            </button>
+          </div>
+          @if (coachLoading) {
+            <div class="coach-loading">
+              <span class="material-icons-round spin">refresh</span>
+              <p>Analyse de votre profil et du cours…</p>
+            </div>
+          } @else if (coachError) {
+            <p class="coach-error">{{ coachError }}</p>
+            <a routerLink="/learning-profile" class="btn-profile-link" (click)="closeCoach()">Ouvrir le profil apprenant</a>
+          } @else if (coachResult) {
+            <p class="coach-course-name">{{ coachResult.courseTitle }}</p>
+            <div class="coach-insight">{{ coachResult.insight }}</div>
+            <p class="coach-hint">Basé sur votre profil enregistré et le catalogue cours (inter-service). Sans clé OpenAI, un texte de secours est utilisé.</p>
+          }
+        </div>
+      }
+      @if (resourcesModalOpen) {
+        <div class="coach-overlay" (click)="closeResources()" role="presentation"></div>
+        <div class="coach-panel" role="dialog" aria-labelledby="resources-dialog-title">
+          <div class="coach-panel-head">
+            <h2 id="resources-dialog-title">
+              <span class="material-icons-round coach-spark">subscriptions</span>
+              Videos & Podcasts - {{ resourcesCourseTitle }}
+            </h2>
+            <button type="button" class="coach-close" (click)="closeResources()" aria-label="Fermer">
+              <span class="material-icons-round">close</span>
+            </button>
+          </div>
+          @if (resourcesLoading) {
+            <div class="coach-loading">
+              <span class="material-icons-round spin">refresh</span>
+              <p>Chargement des ressources...</p>
+            </div>
+          } @else if (resourcesError) {
+            <p class="coach-error">{{ resourcesError }}</p>
+          } @else {
+            <div class="resources-block">
+              <h3 class="resources-title">Videos</h3>
+              @if (resourceVideos.length === 0) {
+                <p class="resources-empty">Aucune video pour ce cours.</p>
+              } @else {
+                <ul class="resources-list">
+                  @for (r of resourceVideos; track r.id) {
+                    <li>
+                      <span class="material-icons-round">videocam</span>
+                      <a [href]="r.url" target="_blank" rel="noopener">{{ r.title }}</a>
+                    </li>
+                  }
+                </ul>
+              }
+              <h3 class="resources-title">Podcasts</h3>
+              @if (resourcePodcasts.length === 0) {
+                <p class="resources-empty">Aucun podcast pour ce cours.</p>
+              } @else {
+                <ul class="resources-list">
+                  @for (r of resourcePodcasts; track r.id) {
+                    <li>
+                      <span class="material-icons-round">podcasts</span>
+                      <a [href]="r.url" target="_blank" rel="noopener">{{ r.title }}</a>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          }
+        </div>
+      }
+
       <div class="container">
         <div class="page-header animate-fade-in-up">
           <h1>Explore Our Courses</h1>
@@ -63,7 +148,7 @@ const LEVEL_ORDER: Record<string, number> = {
           </div>
           <div class="filter-chips">
             @for (level of levels; track level) {
-              <button class="chip" [class.active]="activeLevel === level" (click)="filterByLevel(level)">
+              <button type="button" class="chip" [class.active]="activeLevel === level" (click)="filterByLevel(level)">
                 {{ level }}
               </button>
             }
@@ -73,14 +158,24 @@ const LEVEL_ORDER: Record<string, number> = {
         @if (loading) {
           <p class="loading-msg">Chargement des cours...</p>
         } @else if (error) {
-          <p class="error-msg">Impossible de charger les cours. Vérifiez que le backend (microservice courses) est démarré.</p>
+          <p class="error-msg">{{ coursesErrorMsg }}</p>
+        } @else if (enrollErrorMsg) {
+          <p class="error-msg">{{ enrollErrorMsg }}</p>
         } @else if (filteredCourses.length === 0) {
           <p class="empty-msg">Aucun cours pour le moment.</p>
         } @else {
+          @if (catalogHintMsg) {
+            <p class="catalog-hint">{{ catalogHintMsg }}</p>
+          }
           <div class="courses-grid">
             @for (course of pagedCourses; track course.id; let i = $index) {
               <div class="animate-fade-in-up" [style.animation-delay]="(i * 0.1) + 's'">
-                <app-course-card [course]="course" (enroll)="onEnroll($event)"></app-course-card>
+                <app-course-card
+                  [course]="course"
+                  (enroll)="onEnroll($event)"
+                  (coachAi)="onCoachAi($event)"
+                  (resources)="onOpenResources($event)"
+                ></app-course-card>
               </div>
             }
           </div>
@@ -107,30 +202,99 @@ export class CourseListComponent implements OnInit {
     courses: Course[] = [];
     loading = true;
     error = false;
+    coursesErrorMsg =
+        'Impossible de charger les cours. Démarrez Eureka, la gateway (8093) et le microservice courses (8086), ou seulement courses (8086) pour un repli direct. Redémarrez `ng serve` après toute modification de proxy.conf.json.';
+    /** Message informatif (pas une erreur) sous les filtres. */
+    catalogHintMsg: string | null = null;
+    /** Erreur d'inscription adaptive (au lieu de redirection silencieuse). */
+    enrollErrorMsg: string | null = null;
+    /** Niveau CECRL de l’apprenant (profil adaptatif), pour le verrou par cours. */
+    private studentCefrLevel: CourseLevel | null = null;
 
     pageSize = 6;
     currentPage = 0;
 
+    coachModalOpen = false;
+    coachLoading = false;
+    coachError: string | null = null;
+    coachResult: CourseCoachInsightDto | null = null;
+    resourcesModalOpen = false;
+    resourcesLoading = false;
+    resourcesError: string | null = null;
+    resourcesCourseTitle = '';
+    resourceVideos: ResourceDto[] = [];
+    resourcePodcasts: ResourceDto[] = [];
+
     constructor(
       private courseApi: CourseApiService,
-      private keycloak: KeycloakService
+      private adaptiveApi: AdaptiveApiService,
+      private adaptiveModule: AdaptiveModuleService,
+      private keycloak: KeycloakService,
+      private authService: AuthService,
+      private userSync: UserSyncService,
+      private router: Router
     ) {}
 
     get isAdmin(): boolean {
-      return this.keycloak.getUserRoles().includes('admin');
+      return this.authService.isAdmin();
     }
 
     ngOnInit(): void {
+      void this.bootstrapCourses();
+    }
+
+    private async bootstrapCourses(): Promise<void> {
+      if (this.isAdmin) {
+        this.studentCefrLevel = null;
+        this.catalogHintMsg = null;
+        this.loadFullCatalog();
+        return;
+      }
+
+      if (this.keycloak.isLoggedIn()) {
+        this.catalogHintMsg =
+          'Tous les cours sont listés. L’inscription et les actions (vidéos, coach, inscription) ne sont possibles que pour les cours de votre niveau CECRL ou un niveau inférieur.';
+        this.adaptiveModule.getProfileMe().subscribe({
+          next: (p) => {
+            this.studentCefrLevel = p.currentLevel;
+            this.loadFullCatalog();
+          },
+          error: () => {
+            this.studentCefrLevel = null;
+            this.catalogHintMsg =
+              'Tous les cours sont visibles. Sans profil adaptatif (Mon niveau), seuls les cours A1 sont débloqués pour l’accès — passez le test de placement pour ajuster.';
+            this.loadFullCatalog();
+          }
+        });
+        return;
+      }
+
+      this.studentCefrLevel = null;
+      this.catalogHintMsg = null;
+      this.loadFullCatalog();
+    }
+
+    private loadFullCatalog(): void {
       this.courseApi.getCourses().subscribe({
         next: (dtos) => {
-          this.courses = dtos.map(dto => this.mapToCourse(dto));
+          this.courses = dtos.map((dto) => this.mapToCourseWithAccess(dto));
           this.loadUpcomingSeances();
           this.loading = false;
           this.error = false;
         },
-        error: () => {
+        error: (e: { status?: number; message?: string; url?: string }) => {
           this.loading = false;
           this.error = true;
+          const hint =
+            e?.status === 0
+              ? ' (réseau / CORS / serveur arrêté — ouvrez F12 → Réseau pour voir la requête vers /api-proxy/courses ou :8086)'
+              : e?.status != null
+                ? ` (HTTP ${e.status})`
+                : '';
+          this.coursesErrorMsg =
+            'Impossible de charger les cours.' +
+            hint +
+            ' Vérifiez : Eureka + gateway 8093 + courses 8086, ou au minimum courses sur 8086. Redémarrez `ng serve` si vous avez changé le proxy.';
         }
       });
     }
@@ -158,6 +322,19 @@ export class CourseListComponent implements OnInit {
       return { title: s.title, date, time, durationMinutes: s.durationMinutes };
     }
 
+    private mapToCourseWithAccess(dto: CourseDto): Course {
+      const base = this.mapToCourse(dto);
+      const cefr = dto.level ?? 'A1';
+      if (this.isAdmin || !this.keycloak.isLoggedIn()) {
+        return { ...base, cefrLevel: cefr, accessAllowed: true };
+      }
+      return {
+        ...base,
+        cefrLevel: cefr,
+        accessAllowed: canAccessCourseByCefr(this.studentCefrLevel, cefr)
+      };
+    }
+
     private mapToCourse(dto: CourseDto): Course {
       const levelLabel = LEVEL_TO_LABEL[dto.level ?? 'A1'];
       const lessons = (dto.resources?.length ?? 0) + (dto.seances?.length ?? 0) || 1;
@@ -168,11 +345,14 @@ export class CourseListComponent implements OnInit {
         const weeks = Math.max(1, Math.round((end.getTime() - start.getTime()) / (7 * 24 * 60 * 60 * 1000)));
         duration = `${weeks} semaine(s)`;
       }
+      const cefr = dto.level ?? 'A1';
       return {
         id: dto.id ?? 0,
         title: dto.title,
         description: dto.description ?? '',
         level: levelLabel,
+        cefrLevel: cefr,
+        accessAllowed: true,
         lessons,
         duration,
         students: 0,
@@ -220,7 +400,99 @@ export class CourseListComponent implements OnInit {
         this.currentPage = 0;
     }
 
-    onEnroll(course: Course) {
-        console.log('Enroll:', course.title);
+    onEnroll(course: Course): void {
+        this.enrollErrorMsg = null;
+        if (!course.accessAllowed) {
+          return;
+        }
+        this.adaptiveModule.enrollInCourseMe(course.id).subscribe({
+          next: () => {
+            void this.router.navigate(['/learning-path'], {
+              queryParams: {
+                enrollCourseId: course.id,
+                enrollCourseTitle: course.title,
+                enrollCourseCefr: course.cefrLevel
+              }
+            });
+          },
+          error: (e) => {
+            this.enrollErrorMsg = readApiErrorMessage(
+              e,
+              "Inscription impossible pour ce compte. Passe d'abord le test de placement sur 'Mon niveau', puis réessaie."
+            );
+          }
+        });
+    }
+
+    onCoachAi(course: Course): void {
+        if (!course.accessAllowed) {
+          return;
+        }
+        this.coachModalOpen = true;
+        this.coachLoading = true;
+        this.coachError = null;
+        this.coachResult = null;
+        void this.userSync.resolveStudentId().then((sid) => {
+            if (sid == null) {
+                this.coachLoading = false;
+                this.coachError =
+                    'Connectez-vous pour obtenir un conseil personnalisé ; votre compte est reconnu automatiquement (aucun identifiant à saisir). Enregistrez aussi votre profil sur la page Profil apprenant.';
+                return;
+            }
+            this.adaptiveApi.getCourseCoachInsight(sid, course.id).subscribe({
+            next: (r) => {
+                this.coachResult = r;
+                this.coachLoading = false;
+            },
+            error: (e: { error?: { message?: string }; message?: string; status?: number }) => {
+                this.coachLoading = false;
+                const msg =
+                    (typeof e?.error === 'object' && e.error?.message) ||
+                    (typeof e?.error === 'string' ? e.error : null) ||
+                    e?.message;
+                this.coachError =
+                    msg ??
+                    'Impossible d’obtenir le conseil. Vérifiez la gateway (8093), adaptive-learning (8094), courses, Eureka, et que votre profil existe.';
+            }
+        });
+        });
+    }
+
+    closeCoach(): void {
+        this.coachModalOpen = false;
+        this.coachError = null;
+        this.coachResult = null;
+    }
+
+    onOpenResources(course: Course): void {
+        if (!course.accessAllowed) {
+          return;
+        }
+        this.resourcesModalOpen = true;
+        this.resourcesLoading = true;
+        this.resourcesError = null;
+        this.resourcesCourseTitle = course.title;
+        this.resourceVideos = [];
+        this.resourcePodcasts = [];
+        this.courseApi.getResources(course.id).subscribe({
+            next: (resources) => {
+                this.resourceVideos = resources.filter((r) => r.type === 'VIDEO');
+                this.resourcePodcasts = resources.filter((r) => r.type === 'AUDIO');
+                this.resourcesLoading = false;
+            },
+            error: () => {
+                this.resourcesLoading = false;
+                this.resourcesError = 'Impossible de charger les ressources pour ce cours.';
+            }
+        });
+    }
+
+    closeResources(): void {
+        this.resourcesModalOpen = false;
+        this.resourcesLoading = false;
+        this.resourcesError = null;
+        this.resourcesCourseTitle = '';
+        this.resourceVideos = [];
+        this.resourcePodcasts = [];
     }
 }

@@ -142,6 +142,18 @@
     color: var(--error, #e17055);
 }
 
+.catalog-hint {
+    text-align: center;
+    padding: 0.85rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--radius-md);
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    color: #334155;
+    font-size: 0.95rem;
+    line-height: 1.45;
+}
+
 .pagination-bar {
     display: flex;
     align-items: center;
@@ -185,6 +197,196 @@
         opacity: 0.5;
         cursor: not-allowed;
     }
+}
+
+/* Au-dessus de la navbar fixe (z-index ~1000) pour que la modale soit visible */
+.coach-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 11000;
+    animation: coach-fade-in 0.2s ease;
+}
+
+.coach-panel {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(520px, calc(100vw - 32px));
+    max-height: min(78vh, 640px);
+    overflow: auto;
+    z-index: 11001;
+    background: var(--bg-card, #fff);
+    border-radius: 16px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
+    padding: 1.25rem 1.35rem 1.5rem;
+    animation: coach-pop 0.22s ease;
+}
+
+@keyframes coach-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes coach-pop {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -48%) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.coach-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+
+    h2 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+}
+
+.coach-spark {
+    color: var(--primary, #6c5ce7);
+    font-size: 1.4rem !important;
+}
+
+.coach-close {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.06);
+        color: var(--text);
+    }
+}
+
+.coach-loading {
+    text-align: center;
+    padding: 1.5rem 0;
+    color: var(--text-light);
+
+    .spin {
+        animation: spin-ico 0.9s linear infinite;
+        font-size: 2rem;
+        color: var(--primary);
+        display: inline-block;
+    }
+}
+
+@keyframes spin-ico {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.coach-error {
+    color: #b91c1c;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 1rem;
+}
+
+.btn-profile-link {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 600;
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 0.92rem;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.coach-course-name {
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+}
+
+.coach-insight {
+    white-space: pre-wrap;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--text);
+    margin: 0 0 1rem;
+}
+
+.coach-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.45;
+}
+
+.resources-block {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.resources-title {
+    margin: 0.25rem 0 0;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.resources-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+}
+
+.resources-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.resources-list a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.resources-list a:hover {
+    text-decoration: underline;
+}
+
+.resources-empty {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
 }
 
 @media (max-width: 768px) {

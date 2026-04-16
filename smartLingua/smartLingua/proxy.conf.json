@@ -1,0 +1,26 @@
+{
+  "/api-proxy/courses": {
+    "target": "http://localhost:8093",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api-proxy/courses": "/courses"
+    },
+    "logLevel": "warn"
+  },
+  "/api/adaptive": {
+    "target": "http://localhost:8094",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/api-proxy/quiz": {
+    "target": "http://127.0.0.1:8088",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api-proxy/quiz": ""
+    },
+    "logLevel": "warn"
+  }
+}

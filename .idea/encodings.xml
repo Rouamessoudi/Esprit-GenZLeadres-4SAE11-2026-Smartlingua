@@ -2,7 +2,9 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/backend/backend/backEnd/apiGateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/backend/backEnd/config-server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/backend/backend/backEnd/eureka/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/backend/backEnd/microservices/adaptive-learning/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/backend/backend/backEnd/microservices/courses/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/backend/backend/backEnd/microservices/exams/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/backend/backend/backEnd/microservices/forum/src/main/java" charset="UTF-8" />

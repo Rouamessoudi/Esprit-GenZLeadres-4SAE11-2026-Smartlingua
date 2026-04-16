@@ -370,13 +370,13 @@ export class CourseListAdminComponent implements OnInit {
         this.loadIncompleteCourses();
       },
       error: (err) => {
-        const msg = err?.message || '';
+        const msg = this.extractHttpErrorMessage(err);
         if (err?.status === 0 || err?.status === 404) {
           this.error = 'Backend injoignable. Lancez au minimum MySQL et le microservice courses (port 8086) dans IntelliJ. Optionnel : Eureka + API Gateway (8093).';
         } else if (msg.includes('JSON') || msg.includes('SyntaxError') || err?.error instanceof ProgressEvent) {
           this.error = 'Réponse invalide du backend. Vérifiez Eureka, l\'API Gateway et le microservice courses, puis rafraîchissez cette page.';
         } else {
-          this.error = err?.error?.message || err?.error?.error || msg || 'Erreur chargement';
+          this.error = msg || 'Erreur chargement';
         }
         this.loading = false;
       }
@@ -387,7 +387,22 @@ export class CourseListAdminComponent implements OnInit {
     if (!c.id || !confirm('Supprimer ce cours ?')) return;
     this.api.deleteCourse(c.id).subscribe({
       next: () => this.load(),
-      error: (err) => this.error = err?.error?.message || 'Erreur suppression'
+      error: (err) => {
+        const msg = this.extractHttpErrorMessage(err);
+        if (err?.status === 409 || msg.toLowerCase().includes('constraint') || msg.toLowerCase().includes('foreign key')) {
+          this.error = 'Suppression impossible: ce cours contient encore des séances ou des ressources. Supprimez-les d\'abord dans "Contenu".';
+          return;
+        }
+        this.error = msg || 'Erreur suppression du cours.';
+      }
     });
+  }
+
+  private extractHttpErrorMessage(err: any): string {
+    const backendError = err?.error;
+    if (typeof backendError === 'string' && backendError.trim()) {
+      return backendError.trim();
+    }
+    return backendError?.message || backendError?.error || err?.message || '';
   }
 }

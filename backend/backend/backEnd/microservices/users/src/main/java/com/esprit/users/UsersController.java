@@ -22,6 +22,13 @@ public class UsersController {
         return "Hello from Users service";
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getById(@PathVariable Long id) {
+        return userService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     /**
      * Synchronise l'utilisateur connecté (Keycloak) dans notre base.
      * Appelé après inscription ou connexion pour enregistrer l'étudiant en base.

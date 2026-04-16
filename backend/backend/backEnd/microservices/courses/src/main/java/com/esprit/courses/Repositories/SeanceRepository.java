@@ -13,6 +13,7 @@ public interface SeanceRepository extends JpaRepository<Seance, Long> {
     List<Seance> findByCourseId(Long courseId);
 
     long countByCourseId(Long courseId);
+    void deleteByCourseId(Long courseId);
 
     List<Seance> findByStartDateTimeAfterOrderByStartDateTimeAsc(LocalDateTime after, Pageable pageable);
 

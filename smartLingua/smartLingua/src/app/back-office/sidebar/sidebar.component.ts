@@ -77,6 +77,7 @@ export class SidebarComponent implements OnInit {
   mainMenu = [
     { icon: 'dashboard', label: 'Dashboard', route: '/admin/dashboard', exact: true, badge: '' },
     { icon: 'school', label: 'Courses', route: '/admin/courses', exact: false, badge: '12' },
+    { icon: 'auto_graph', label: 'Adaptive', route: '/admin/adaptive', exact: false, badge: '' },
     { icon: 'people', label: 'Students', route: '/admin/students', exact: false, badge: '' },
     { icon: 'quiz', label: 'Quizzes', route: '/admin/quizzes', exact: false, badge: '3' },
     { icon: 'assignment', label: 'Enrollments', route: '/admin/enrollments', exact: false, badge: '' },

@@ -5,14 +5,15 @@ import { KeycloakBearerInterceptor, KeycloakService } from 'keycloak-angular';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import { routes } from './app.routes';
+import { keycloakConnectConfig } from './core/keycloak.config';
 
 function initializeKeycloak(keycloak: KeycloakService) {
   return () =>
     keycloak.init({
       config: {
-        url: 'http://localhost:8081',
-        realm: 'smartlingua',
-        clientId: 'angular'
+        url: keycloakConnectConfig.url,
+        realm: keycloakConnectConfig.realm,
+        clientId: keycloakConnectConfig.clientId,
       },
       initOptions: {
         onLoad: 'check-sso',

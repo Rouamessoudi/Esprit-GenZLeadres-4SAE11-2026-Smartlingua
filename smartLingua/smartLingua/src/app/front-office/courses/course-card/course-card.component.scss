@@ -169,3 +169,52 @@
     margin-left: 4px;
     font-style: italic;
 }
+
+.card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.coach-btn {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+}
+
+.coach-btn .material-icons-round {
+    font-size: 1rem;
+}
+
+.btn-ghost {
+    background: rgba(108, 92, 231, 0.08);
+    color: var(--primary, #6c5ce7);
+    border: 1px solid rgba(108, 92, 231, 0.35);
+}
+
+.btn-ghost:hover {
+    background: rgba(108, 92, 231, 0.14);
+    border-color: var(--primary, #6c5ce7);
+}
+
+.course-card.locked {
+    opacity: 0.92;
+    .card-body {
+        filter: grayscale(0.15);
+    }
+}
+
+.badge-lock {
+    background: rgba(15, 23, 42, 0.85) !important;
+    color: #fff !important;
+    font-size: 10px !important;
+    max-width: 140px;
+    text-align: right;
+    line-height: 1.2;
+}
+
+button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}

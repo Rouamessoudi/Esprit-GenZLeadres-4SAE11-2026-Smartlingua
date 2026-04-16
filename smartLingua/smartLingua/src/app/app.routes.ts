@@ -15,14 +15,52 @@ export const routes: Routes = [
             },
             {
                 path: 'courses',
-                // canActivate: [authGuard], // désactivé pour accès public au catalogue — réactiver quand Keycloak est en place
+                canActivate: [authGuard],
                 loadComponent: () =>
                     import('./front-office/courses/course-list/course-list.component').then(m => m.CourseListComponent),
             },
             {
-                path: 'quiz',
+                path: 'learning-path',
+                canActivate: [authGuard],
                 loadComponent: () =>
-                    import('./front-office/quiz/quiz-page.component').then(m => m.QuizPageComponent),
+                    import('./front-office/adaptive/adaptive-learning-path.component').then(m => m.AdaptiveLearningPathComponent),
+            },
+            {
+                path: 'adaptive/course/:courseId/learning-plan',
+                canActivate: [authGuard],
+                loadComponent: () =>
+                    import('./front-office/adaptive/adaptive-course-learning-plan.component').then(
+                        m => m.AdaptiveCourseLearningPlanComponent
+                    ),
+            },
+            {
+                path: 'adaptive/mon-niveau',
+                canActivate: [authGuard],
+                loadComponent: () =>
+                    import('./front-office/adaptive/current-level-page.component').then(m => m.CurrentLevelPageComponent),
+            },
+            {
+                path: 'progression',
+                canActivate: [authGuard],
+                loadComponent: () =>
+                    import('./front-office/adaptive/adaptive-progression.component').then(m => m.AdaptiveProgressionComponent),
+            },
+            {
+                path: 'learning-profile',
+                redirectTo: 'progression',
+                pathMatch: 'full',
+            },
+            {
+                path: 'level-test',
+                canActivate: [authGuard],
+                loadComponent: () =>
+                    import('./front-office/adaptive/adaptive-level-test.component').then(m => m.AdaptiveLevelTestComponent),
+            },
+            {
+                path: 'payment',
+                canActivate: [authGuard],
+                loadComponent: () =>
+                    import('./front-office/payment/payment-page.component').then(m => m.PaymentPageComponent),
             },
         ],
     },
@@ -66,6 +104,11 @@ export const routes: Routes = [
                 path: 'quiz',
                 loadComponent: () =>
                     import('./back-office/quiz/admin-quiz-page.component').then(m => m.AdminQuizPageComponent),
+            },
+            {
+                path: 'adaptive',
+                loadComponent: () =>
+                    import('./back-office/adaptive/teacher-adaptive-dashboard.component').then(m => m.TeacherAdaptiveDashboardComponent),
             },
         ],
     },

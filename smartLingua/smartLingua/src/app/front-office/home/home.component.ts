@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CourseCardComponent, Course } from '../courses/course-card/course-card.component';
 import { AuthService } from '../../core/auth.service';
+import { AdaptiveModuleService } from '../../core/services/adaptive-module.service';
 
 @Component({
     selector: 'app-home',
@@ -225,6 +226,8 @@ export class HomeComponent {
             title: 'English Foundations',
             description: 'Build a solid foundation in English grammar, vocabulary, and basic communication skills.',
             level: 'Beginner',
+            cefrLevel: 'A1',
+            accessAllowed: true,
             lessons: 24,
             duration: '8 weeks',
             students: 12450,
@@ -237,6 +240,8 @@ export class HomeComponent {
             title: 'Conversational English',
             description: 'Master everyday conversations with native-like fluency and confidence.',
             level: 'Intermediate',
+            cefrLevel: 'B1',
+            accessAllowed: true,
             lessons: 32,
             duration: '10 weeks',
             students: 8920,
@@ -249,6 +254,8 @@ export class HomeComponent {
             title: 'IELTS Preparation',
             description: 'Comprehensive preparation for the IELTS exam covering all four test sections.',
             level: 'Advanced',
+            cefrLevel: 'C1',
+            accessAllowed: true,
             lessons: 36,
             duration: '14 weeks',
             students: 9870,
@@ -258,13 +265,36 @@ export class HomeComponent {
         }
     ];
 
-    constructor(private authService: AuthService) {}
+    constructor(
+        private authService: AuthService,
+        private router: Router,
+        private adaptiveModule: AdaptiveModuleService
+    ) {}
 
     onRegister() {
         this.authService.register();
     }
 
-    onEnroll(course: Course) {
-        console.log('Enroll:', course.title);
+    onEnroll(course: Course): void {
+        this.adaptiveModule.enrollInCourseMe(course.id).subscribe({
+            next: () => {
+                void this.router.navigate(['/learning-path'], {
+                    queryParams: {
+                        enrollCourseId: course.id,
+                        enrollCourseTitle: course.title,
+                        enrollCourseCefr: course.cefrLevel
+                    }
+                });
+            },
+            error: () => {
+                void this.router.navigate(['/learning-path'], {
+                    queryParams: {
+                        enrollCourseId: course.id,
+                        enrollCourseTitle: course.title,
+                        enrollCourseCefr: course.cefrLevel
+                    }
+                });
+            }
+        });
     }
 }

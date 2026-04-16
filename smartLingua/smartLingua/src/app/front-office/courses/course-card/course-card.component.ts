@@ -1,11 +1,16 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { NgClass, DecimalPipe } from '@angular/common';
+import type { CourseLevel } from '../../../core/services/course-api.service';
 
 export interface Course {
   id: number;
   title: string;
   description: string;
   level: 'Beginner' | 'Intermediate' | 'Advanced';
+  /** Niveau CECRL du cours (pour le verrou d’accès). */
+  cefrLevel: CourseLevel;
+  /** false si le cours est au-dessus du niveau de l’apprenant. */
+  accessAllowed: boolean;
   lessons: number;
   duration: string;
   students: number;
@@ -21,7 +26,7 @@ export interface Course {
   standalone: true,
   imports: [NgClass, DecimalPipe],
   template: `
-    <div class="course-card card">
+    <div class="course-card card" [class.locked]="!course.accessAllowed">
       <div class="card-header" [style.background]="course.color">
         <div class="card-icon">
           <span class="material-icons-round">{{ course.icon }}</span>
@@ -31,6 +36,9 @@ export interface Course {
           'badge-intermediate': course.level === 'Intermediate',
           'badge-advanced': course.level === 'Advanced'
         }">{{ course.level }}</span>
+        @if (!course.accessAllowed) {
+          <span class="badge badge-lock" title="Niveau du cours supérieur à votre niveau actuel">CECRL {{ course.cefrLevel }} · verrouillé</span>
+        }
       </div>
       <div class="card-body">
         <h3>{{ course.title }}</h3>
@@ -67,9 +75,36 @@ export interface Course {
               </ul>
             </div>
           }
-          <button class="btn btn-primary btn-sm" (click)="enroll.emit(course)">
-            Enroll Now
-          </button>
+          <div class="card-actions">
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm"
+              (click)="onResourcesClick($event)"
+              [disabled]="!course.accessAllowed"
+              title="Consulter les videos et podcasts du cours"
+            >
+              <span class="material-icons-round">subscriptions</span>
+              Videos & Podcasts
+            </button>
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm coach-btn"
+              (click)="onCoachClick($event)"
+              [disabled]="!course.accessAllowed"
+              title="Conseil personnalisé selon votre profil"
+            >
+              <span class="material-icons-round">auto_awesome</span>
+              Coach IA
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              [disabled]="!course.accessAllowed"
+              (click)="enroll.emit(course)"
+            >
+              {{ course.accessAllowed ? 'Enroll Now' : 'Niveau trop élevé' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -79,4 +114,18 @@ export interface Course {
 export class CourseCardComponent {
   @Input() course!: Course;
   @Output() enroll = new EventEmitter<Course>();
+  @Output() coachAi = new EventEmitter<Course>();
+  @Output() resources = new EventEmitter<Course>();
+
+  onCoachClick(ev: MouseEvent): void {
+    ev.preventDefault();
+    ev.stopPropagation();
+    this.coachAi.emit(this.course);
+  }
+
+  onResourcesClick(ev: MouseEvent): void {
+    ev.preventDefault();
+    ev.stopPropagation();
+    this.resources.emit(this.course);
+  }
 }

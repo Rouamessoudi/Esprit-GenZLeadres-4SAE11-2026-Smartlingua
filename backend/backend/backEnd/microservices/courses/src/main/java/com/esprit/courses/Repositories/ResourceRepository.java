@@ -11,6 +11,7 @@ public interface ResourceRepository extends JpaRepository<Resource, Long> {
     List<Resource> findByCourseId(Long courseId);
 
     long countByCourseId(Long courseId);
+    void deleteByCourseId(Long courseId);
 
     long countByType(com.esprit.courses.entities.enums.ResourceType type);
 

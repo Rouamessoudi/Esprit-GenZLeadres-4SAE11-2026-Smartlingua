@@ -1,0 +1,5 @@
+com\esprit\adaptivelearning\adaptive\schedule\DifficultyMonitoringSchedulerTest.class
+com\esprit\adaptivelearning\adaptive\controller\AdaptiveLearningControllerIT.class
+com\esprit\adaptivelearning\adaptive\service\AdaptiveIntegrationTest.class
+com\esprit\adaptivelearning\adaptive\service\AdaptiveLearningFacadeServiceTest.class
+com\esprit\adaptivelearning\adaptive\service\AdaptiveServiceTest.class

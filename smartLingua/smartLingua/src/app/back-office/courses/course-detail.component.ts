@@ -3,6 +3,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CourseApiService, CourseDto, ResourceDto, ResourceType, SeanceDto, CourseSummaryDto, ResourcesSummaryDto, SeancesSummaryDto, CourseCompletionDto, SeanceWithCourseDto } from '../../core/services/course-api.service';
+import { firstValueFrom } from 'rxjs';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-course-detail',
@@ -93,6 +95,12 @@ import { CourseApiService, CourseDto, ResourceDto, ResourceType, SeanceDto, Cour
           </div>
           <div class="card-body">
             <p class="card-subtitle">Ajoutez des supports (PDF, vidéos, audio) pour ce cours.</p>
+            <div class="quick-pack-row">
+              <button type="button" class="btn btn-outline btn-sm" (click)="addListeningPack()" [disabled]="addingListeningPack">
+                <span class="material-icons-round">library_add</span>
+                {{ addingListeningPack ? 'Injection...' : 'Injecter pack Listening (video + podcasts)' }}
+              </button>
+            </div>
             <form [formGroup]="resourceForm" (ngSubmit)="addResource()" class="add-form">
               <input formControlName="title" placeholder="Titre (min. 2 caractères)" class="form-input">
               <select formControlName="type" class="form-select">
@@ -133,7 +141,8 @@ import { CourseApiService, CourseDto, ResourceDto, ResourceType, SeanceDto, Cour
                       </span>
                     </div>
                     <div class="perf-actions">
-                      <a [href]="r.url" target="_blank" class="link-btn">Ouvrir</a>
+                      <button type="button" class="link-btn btn-link" (click)="openResource(r)">Ouvrir</button>
+                      <a [href]="r.url" target="_blank" rel="noopener" class="link-btn">Nouvel onglet</a>
                       <button type="button" class="btn-icon btn-danger" (click)="deleteResource(r)" title="Supprimer">
                         <span class="material-icons-round">delete_outline</span>
                       </button>
@@ -142,6 +151,25 @@ import { CourseApiService, CourseDto, ResourceDto, ResourceType, SeanceDto, Cour
                 }
               }
             </div>
+            @if (previewResource && previewUrl) {
+              <div class="preview-panel">
+                <div class="preview-head">
+                  <strong>Apercu: {{ previewResource.title }}</strong>
+                  <button type="button" class="btn-icon" (click)="closePreview()" title="Fermer l'apercu">
+                    <span class="material-icons-round">close</span>
+                  </button>
+                </div>
+                @if (previewMode === 'video' && previewPlainUrl) {
+                  <video class="preview-media" [src]="previewPlainUrl" controls playsinline></video>
+                } @else if (previewMode === 'audio' && previewPlainUrl) {
+                  <audio class="preview-audio" [src]="previewPlainUrl" controls></audio>
+                } @else if (previewMode === 'embed') {
+                  <iframe class="preview-frame" [src]="previewUrl" allowfullscreen></iframe>
+                } @else {
+                  <iframe class="preview-frame" [src]="previewUrl"></iframe>
+                }
+              </div>
+            }
           </div>
         </section>
 
@@ -240,6 +268,7 @@ import { CourseApiService, CourseDto, ResourceDto, ResourceType, SeanceDto, Cour
     .card-body { padding: 0 24px 24px; }
     .card-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; }
     .add-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+    .quick-pack-row { margin-bottom: 10px; }
     .form-input, .form-select { padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.88rem; background: #fff; transition: border-color 0.2s, box-shadow 0.2s; }
     .form-input:focus, .form-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(108,92,231,0.12); }
     .form-input { min-width: 140px; }
@@ -264,7 +293,13 @@ import { CourseApiService, CourseDto, ResourceDto, ResourceType, SeanceDto, Cour
     .perf-meta { font-size: 0.76rem; color: var(--text-muted); display: block; margin-top: 2px; }
     .perf-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .link-btn { font-size: 0.82rem; font-weight: 600; color: var(--primary); text-decoration: none; }
+    .btn-link { background: transparent; border: none; cursor: pointer; padding: 0; }
     .link-btn:hover { text-decoration: underline; }
+    .preview-panel { margin-top: 12px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; }
+    .preview-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .preview-frame { width: 100%; min-height: 280px; border: none; }
+    .preview-media { width: 100%; max-height: 420px; background: #000; display: block; }
+    .preview-audio { width: 100%; display: block; margin: 12px 0; }
     .btn-icon { width: 36px; height: 36px; border: none; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: transparent; color: var(--text-muted); transition: var(--transition); }
     .btn-icon:hover { background: rgba(225,112,85,0.1); color: var(--danger); }
     .btn-icon .material-icons-round { font-size: 1.2rem; }
@@ -291,12 +326,18 @@ export class CourseDetailComponent implements OnInit {
   resourceForm: FormGroup;
   seanceForm: FormGroup;
   resourceTypes: ResourceType[] = ['PDF', 'VIDEO', 'AUDIO'];
+  addingListeningPack = false;
+  previewResource: ResourceDto | null = null;
+  previewUrl: SafeResourceUrl | null = null;
+  previewPlainUrl: string | null = null;
+  previewMode: 'embed' | 'video' | 'audio' | 'iframe' = 'embed';
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private api: CourseApiService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private sanitizer: DomSanitizer
   ) {
     this.resourceForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(255)]],
@@ -467,5 +508,112 @@ export class CourseDetailComponent implements OnInit {
     this.api.deleteSeance(this.courseId, s.id).subscribe({
       next: () => { this.seances = this.seances.filter(x => x.id !== s.id); this.loadSummary(); this.loadSeancesSummary(); }
     });
+  }
+
+  openResource(r: ResourceDto): void {
+    this.previewResource = r;
+    const sourceUrl = this.toEmbedUrl(r);
+    this.previewPlainUrl = sourceUrl;
+    this.previewMode = this.detectPreviewMode(r, sourceUrl);
+    this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(sourceUrl);
+  }
+
+  closePreview(): void {
+    this.previewResource = null;
+    this.previewUrl = null;
+    this.previewPlainUrl = null;
+  }
+
+  private toEmbedUrl(r: ResourceDto): string {
+    const url = r.url?.trim() ?? '';
+    if (r.type === 'VIDEO') {
+      const yt = this.extractYouTubeId(url);
+      if (yt) return `https://www.youtube.com/embed/${yt}`;
+      const list = this.extractYouTubePlaylistId(url);
+      if (list) return `https://www.youtube.com/embed/videoseries?list=${list}`;
+    }
+    if (r.type === 'AUDIO' && url.includes('open.spotify.com')) {
+      const m = url.match(/open\.spotify\.com\/(episode|show|track)\/([A-Za-z0-9]+)/i);
+      if (m) return `https://open.spotify.com/embed/${m[1]}/${m[2]}`;
+    }
+    return url;
+  }
+
+  private detectPreviewMode(r: ResourceDto, url: string): 'embed' | 'video' | 'audio' | 'iframe' {
+    const lower = url.toLowerCase();
+    if (r.type === 'VIDEO' && (lower.endsWith('.mp4') || lower.endsWith('.webm'))) return 'video';
+    if (r.type === 'AUDIO' && (lower.endsWith('.mp3') || lower.endsWith('.wav') || lower.endsWith('.ogg'))) return 'audio';
+    if (lower.includes('/embed/')) return 'embed';
+    return 'iframe';
+  }
+
+  private extractYouTubeId(url: string): string | null {
+    const reg = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{6,})/i;
+    const m = url.match(reg);
+    return m?.[1] ?? null;
+  }
+
+  private extractYouTubePlaylistId(url: string): string | null {
+    const reg = /[?&]list=([A-Za-z0-9_-]+)/i;
+    const m = url.match(reg);
+    return m?.[1] ?? null;
+  }
+
+  async addListeningPack(): Promise<void> {
+    if (this.addingListeningPack) return;
+    this.addingListeningPack = true;
+    this.resourceSubmitError = null;
+    const level = this.course?.level ?? 'B1';
+    const pack = this.buildProfessionalPack(level);
+    try {
+      for (const item of pack) {
+        await firstValueFrom(
+          this.api.addResource(this.courseId, { title: item.title, type: item.type, url: item.url })
+        );
+      }
+      this.loadResources();
+      this.loadSummary();
+      this.loadResourcesSummary();
+    } catch (err: any) {
+      this.resourceSubmitError = err?.error?.message || err?.message || 'Echec injection du pack Listening.';
+    } finally {
+      this.addingListeningPack = false;
+    }
+  }
+
+  private buildProfessionalPack(level: string): Array<{ title: string; type: ResourceType; url: string }> {
+    const byLevel: Record<string, Array<{ title: string; type: ResourceType; url: string }>> = {
+      A1: [
+        { title: 'A1 Listening - British Council Playlist', type: 'VIDEO', url: 'https://www.youtube.com/playlist?list=PLMWnmna4FyDORi2JIDmi1Yr5OHhAPCWoH' },
+        { title: 'A1 Listening - British Council Lessons', type: 'VIDEO', url: 'https://learnenglish.britishcouncil.org/free-resources/listening/a1' },
+        { title: 'Beginner English Podcast', type: 'AUDIO', url: 'https://open.spotify.com/show/7iQXmUT7XguZcyQWfX0n3A' }
+      ],
+      A2: [
+        { title: 'A2 Listening - British Council Playlist', type: 'VIDEO', url: 'https://www.youtube.com/playlist?list=PLMWnmna4FyDNeukpoRin9oX2qEuMnvbzP' },
+        { title: 'A2 Listening - British Council Lessons', type: 'VIDEO', url: 'https://learnenglishteens.britishcouncil.org/skills/listening/a2-listening' },
+        { title: 'A2 Listening Podcast Practice', type: 'AUDIO', url: 'https://open.spotify.com/show/7iQXmUT7XguZcyQWfX0n3A' }
+      ],
+      B1: [
+        { title: 'B1 Listening - BBC 6 Minute English', type: 'VIDEO', url: 'https://www.youtube.com/playlist?list=PLcetZ6gSk96-FECmH9l7Vlx5VDigvgZpt' },
+        { title: 'B1 Videos - Cambridge English', type: 'VIDEO', url: 'https://assets.cambridgeenglish.org/portal/learner/b1/videos.html' },
+        { title: 'BBC Learning English Podcast', type: 'AUDIO', url: 'https://open.spotify.com/show/3fKOTwtnX5oZLaiNntKWAV' }
+      ],
+      B2: [
+        { title: 'B2 Listening - BBC Playlist', type: 'VIDEO', url: 'https://www.youtube.com/playlist?list=PLGY7ZaBmPL0GNgX3RI-L3tzf6GPhXsmk4' },
+        { title: 'B2 Videos - Cambridge English', type: 'VIDEO', url: 'https://assets.cambridgeenglish.org/portal/learner/b2/videos.html' },
+        { title: 'Advanced English Podcast', type: 'AUDIO', url: 'https://open.spotify.com/show/3fKOTwtnX5oZLaiNntKWAV' }
+      ],
+      C1: [
+        { title: 'C1 Listening - TED-Ed Lessons', type: 'VIDEO', url: 'https://ed.ted.com/lessons' },
+        { title: 'C1 Videos - Cambridge English', type: 'VIDEO', url: 'https://assets.cambridgeenglish.org/portal/learner/c1/videos.html' },
+        { title: 'C1 English Listening Podcast', type: 'AUDIO', url: 'https://open.spotify.com/show/3fKOTwtnX5oZLaiNntKWAV' }
+      ],
+      C2: [
+        { title: 'C2 Proficiency - Cambridge Preparation Video', type: 'VIDEO', url: 'https://www.youtube.com/watch?v=bcfd6wMNDwo' },
+        { title: 'C2 Advanced Listening Practice', type: 'VIDEO', url: 'https://www.youtube.com/watch?v=YE4fWmjk6b4' },
+        { title: 'C2 Advanced English Podcast', type: 'AUDIO', url: 'https://open.spotify.com/show/3fKOTwtnX5oZLaiNntKWAV' }
+      ]
+    };
+    return byLevel[level] ?? byLevel['B1'];
   }
 }

@@ -35,6 +35,10 @@ public class Course {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Resource> resources = new ArrayList<>();
 
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("orderIndex ASC, id ASC")
+    private List<Chapter> chapters = new ArrayList<>();
+
     public Course() {}
 
     public Long getId() {
@@ -108,5 +112,13 @@ public class Course {
     @SuppressWarnings("unused")
     public void setResources(List<Resource> resources) {
         this.resources = resources;
+    }
+
+    public List<Chapter> getChapters() {
+        return chapters;
+    }
+
+    public void setChapters(List<Chapter> chapters) {
+        this.chapters = chapters;
     }
 }

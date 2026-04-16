@@ -1,0 +1,139 @@
+<section class="page">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Adaptive Learning</p>
+      <h1>Mon niveau</h1>
+      <p class="lead">
+        Test de placement, niveau CECRL, assistant IA et recommandations.
+      </p>
+    </div>
+  </header>
+
+  @if (!keycloak.isLoggedIn()) {
+    <p class="banner warn">Connectez-vous pour enregistrer votre test et synchroniser votre profil.</p>
+  }
+
+  <div class="card profile-bar" *ngIf="keycloak.isLoggedIn()">
+    <div class="avatar">{{ initials }}</div>
+    <div>
+      <h2 class="name">{{ displayName || 'Profil' }}</h2>
+      <p class="email" *ngIf="displayEmail">{{ displayEmail }}</p>
+      <p class="level-line" *ngIf="profilePreview?.hasPlacementResult">
+        <span class="pill level">Niveau actuel : {{ profilePreview?.currentLevel }}</span>
+        <span class="pill target" *ngIf="displayObjectiveLevel">Objectif {{ displayObjectiveLevel }}</span>
+      </p>
+    </div>
+    <button type="button" class="btn ghost" (click)="refreshProfilePreview()" [disabled]="loadingProfile">Actualiser le profil</button>
+  </div>
+
+  <div class="grid-2">
+    <div class="card" *ngIf="showPlacementTestBlock">
+      <h2>Test de placement</h2>
+      <p class="muted">
+        Le score et le niveau sont calcules automatiquement par le serveur. Aucune saisie manuelle n'est autorisee.
+      </p>
+      <div class="actions">
+        <button type="button" class="btn primary" (click)="startPlacementTest()" [disabled]="!keycloak.isLoggedIn() || busy">
+          {{ busy ? 'Lancement du test...' : 'Passer le test de placement' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="card level-card" *ngIf="!showPlacementTestBlock">
+      <h2>Niveau actuel</h2>
+      <p class="muted">
+        Votre niveau actuel : <strong>{{ profilePreview?.currentLevel }}</strong>
+      </p>
+      <p class="muted">Le test de placement est reserve aux nouveaux etudiants.</p>
+      <div class="actions">
+        <button type="button" class="btn secondary" (click)="generatePath()" [disabled]="!keycloak.isLoggedIn() || busy || !canGeneratePath">
+          Générer mon parcours personnalisé
+        </button>
+      </div>
+    </div>
+
+    @if (placement && !hasRecordedLevel) {
+    <div class="card">
+      <h2>Resultat du test</h2>
+      <div class="badge-row">
+        <span class="badge level">Niveau calcule : {{ placement.assignedLevel }}</span>
+        <span class="badge score">Score obtenu : {{ placement.score }}/100</span>
+      </div>
+      <p class="insight">{{ placement.pedagogicalInsight }}</p>
+    </div>
+    }
+  </div>
+
+  @if (placement && !hasRecordedLevel) {
+  <div class="card assistant">
+    <div class="assistant-head">
+      <span class="spark">✨</span>
+      <h2>Assistant IA</h2>
+      <span class="tag">Spring AI · fallback metier si indisponible</span>
+    </div>
+    <p class="assistant-body">{{ placement.assistantIaMessage }}</p>
+  </div>
+  }
+
+  @if (placement && recommendations.length && !hasRecordedLevel) {
+  <div class="card">
+    <h2>Recommandations pedagogiques</h2>
+    <p class="muted">Contenus issus du catalogue (Feign) et texte personnalise.</p>
+    <div class="rec-list">
+      @for (r of recommendations; track r.id) {
+        <article class="rec">
+          <div class="rec-head">
+            <span class="pill">{{ r.itemType }}</span>
+            @if (r.source === 'AI') { <span class="pill ai">IA</span> }
+            @if (r.source === 'RULE') { <span class="pill">Regles</span> }
+          </div>
+          <h3>{{ r.itemTitle }}</h3>
+          <p>{{ r.personalizedText }}</p>
+        </article>
+      }
+    </div>
+  </div>
+  }
+
+  <div class="card catalog" *ngIf="catalog">
+    <h2>Controle d’acces aux cours</h2>
+    <p class="muted">Votre niveau : <strong>{{ catalog.studentLevel }}</strong> — les contenus trop avances sont indiques comme bloques.</p>
+    <p class="helper">💡 Votre niveau vous permet d’accéder aux contenus {{ catalog.studentLevel }} et inférieurs.</p>
+    <div class="catalog-cols">
+      <div>
+        <h3 class="ok-h">Accessibles</h3>
+        @for (c of accessibleCourses; track c.courseId) {
+          <div class="course-row ok">
+            <span class="t">{{ c.title }}</span>
+            <span class="lvl">{{ c.courseLevel }}</span>
+          </div>
+        }
+        @if (!accessibleCourses.length) {
+          <p class="muted small">Aucun cours liste (verifiez le microservice cours).</p>
+        }
+      </div>
+      <div>
+        <h3 class="block-h">Niveau insuffisant</h3>
+        @for (c of blockedCourses; track c.courseId) {
+          <div class="course-row block">
+            <span class="t">{{ c.title }}</span>
+            <span class="lvl">{{ c.courseLevel }}</span>
+            <span class="msg">{{ c.accessMessage }}</span>
+          </div>
+        }
+        @if (!blockedCourses.length) {
+          <p class="muted small">Aucun cours bloque pour votre niveau.</p>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (message) { <p class="banner ok">{{ message }}</p> }
+  @if (error) { <p class="banner err">{{ error }}</p> }
+
+  <nav class="subnav">
+    <a routerLink="/learning-path">Parcours</a>
+    <a routerLink="/progression">Progression</a>
+    <a routerLink="/level-test">Test final</a>
+  </nav>
+</section>

@@ -12,47 +12,60 @@ import { UserSyncService } from '../../../core/user-sync.service';
   imports: [RouterLink, RouterLinkActive, CommonModule],
   template: `
     <nav class="navbar">
-      <div class="navbar-inner container">
-        <a routerLink="/" class="logo">
-          <span class="logo-icon material-icons-round">translate</span>
-          <span class="logo-text">Smart<span class="logo-accent">Lingua</span></span>
-        </a>
+      <div class="navbar-inner">
+        <div class="nav-left">
+          <a routerLink="/" class="logo" (click)="closeMenu()">
+            <span class="logo-icon material-icons-round">translate</span>
+            <span class="logo-text"><span class="logo-smart">Smart</span><span class="logo-accent">Lingua</span></span>
+          </a>
+        </div>
 
-        <button class="mobile-toggle" (click)="toggleMenu()" [class.active]="menuOpen">
+        <button class="mobile-toggle" (click)="toggleMenu()" [class.active]="menuOpen" aria-label="Toggle navigation menu">
           <span></span><span></span><span></span>
         </button>
 
         <div class="nav-menu" [class.open]="menuOpen">
-          <ul class="nav-links">
-            <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Home</a></li>
-            <li><a routerLink="/courses" routerLinkActive="active" (click)="closeMenu()">Courses</a></li>
-            <li><a href="#features" (click)="closeMenu()">Features</a></li>
-            <li><a href="#about" (click)="closeMenu()">About</a></li>
-          </ul>
-          <div class="nav-actions">
-            @if (isLoggedIn) {
-              @if (isAdmin) {
-                <a routerLink="/admin" (click)="closeMenu()" class="btn btn-secondary btn-sm">
-                  <span class="material-icons-round" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">admin_panel_settings</span>
-                  Admin Panel
-                </a>
-              } @else {
-                <a routerLink="/quiz" (click)="closeMenu()" class="btn btn-outline btn-sm">
-                  <span class="material-icons-round" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">quiz</span>
-                  Faire le quiz
-                </a>
+          <div class="nav-center">
+            <ul class="nav-links">
+              <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Home</a></li>
+              <li><a routerLink="/courses" routerLinkActive="active" (click)="closeMenu()">Courses</a></li>
+              @if (isLoggedIn && !isAdmin) {
+                <li><a routerLink="/adaptive/mon-niveau" routerLinkActive="active" (click)="closeMenu()">Mon niveau</a></li>
+                <li><a routerLink="/learning-path" routerLinkActive="active" (click)="closeMenu()">Learning Path</a></li>
+                <li><a routerLink="/progression" routerLinkActive="active" (click)="closeMenu()">Progression</a></li>
+                <li><a routerLink="/level-test" routerLinkActive="active" (click)="closeMenu()">Test final</a></li>
               }
-              <span class="nav-username">
-                <span class="material-icons-round" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">person</span>
-                {{ username }}
-              </span>
-              <button (click)="logout()" class="btn btn-primary btn-sm">
-                <span class="material-icons-round" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">logout</span>
-                Logout
-              </button>
-            } @else {
-              <button (click)="login()" class="btn btn-primary btn-sm">Sign In</button>
-            }
+              <li><a href="#features" (click)="closeMenu()">Features</a></li>
+              <li><a href="#about" (click)="closeMenu()">About</a></li>
+            </ul>
+          </div>
+
+          <div class="nav-right">
+            <div class="nav-actions">
+              @if (isLoggedIn) {
+                @if (isAdmin) {
+                  <a routerLink="/admin" (click)="closeMenu()" class="btn btn-secondary btn-sm">
+                    <span class="material-icons-round" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">admin_panel_settings</span>
+                    Admin Panel
+                  </a>
+                } @else {
+                  <a routerLink="/adaptive/mon-niveau" (click)="closeMenu()" class="btn btn-outline btn-sm adaptive-btn">
+                    <span class="material-icons-round" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">quiz</span>
+                    Adaptive Learning
+                  </a>
+                }
+                <span class="nav-username">
+                  <span class="material-icons-round" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">person</span>
+                  {{ username }}
+                </span>
+                <button (click)="logout()" class="btn btn-primary btn-sm logout-btn">
+                  <span class="material-icons-round" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">logout</span>
+                  Logout
+                </button>
+              } @else {
+                <button (click)="login()" class="btn btn-primary btn-sm logout-btn">Sign In</button>
+              }
+            </div>
           </div>
         </div>
       </div>
@@ -76,14 +89,14 @@ export class NavbarComponent implements OnInit {
     this.isLoggedIn = this.keycloakService.isLoggedIn();
     if (this.isLoggedIn) {
       this.username = this.keycloakService.getUsername();
-      this.isAdmin = this.keycloakService.getUserRoles().includes('admin');
+      this.isAdmin = this.authService.isAdmin();
       this.userSyncService.syncCurrentUser();
     }
     // Sync aussi quand Keycloak signale une connexion réussie (au retour de l'inscription/connexion)
     this.keycloakService.getKeycloakInstance().onAuthSuccess = () => {
       this.isLoggedIn = true;
       this.username = this.keycloakService.getUsername();
-      this.isAdmin = this.keycloakService.getUserRoles().includes('admin');
+      this.isAdmin = this.authService.isAdmin();
       this.userSyncService.syncCurrentUser();
     };
   }

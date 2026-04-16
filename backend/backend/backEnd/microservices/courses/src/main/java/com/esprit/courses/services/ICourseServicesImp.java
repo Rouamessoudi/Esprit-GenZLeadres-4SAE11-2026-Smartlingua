@@ -3,11 +3,14 @@ package com.esprit.courses.services;
 import com.esprit.courses.DTO.CourseDto;
 import com.esprit.courses.DTO.ResourceDto;
 import com.esprit.courses.Repositories.CourseRepository;
+import com.esprit.courses.Repositories.ResourceRepository;
+import com.esprit.courses.Repositories.SeanceRepository;
 import com.esprit.courses.entities.Course;
 import com.esprit.courses.entities.enums.CourseLevel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,9 +19,16 @@ import java.util.stream.Collectors;
 public class ICourseServicesImp implements ICourseServices {
 
     private final CourseRepository courseRepository;
+    private final ResourceRepository resourceRepository;
+    private final SeanceRepository seanceRepository;
 
-    public ICourseServicesImp(CourseRepository courseRepository) {
+    public ICourseServicesImp(
+            CourseRepository courseRepository,
+            ResourceRepository resourceRepository,
+            SeanceRepository seanceRepository) {
         this.courseRepository = courseRepository;
+        this.resourceRepository = resourceRepository;
+        this.seanceRepository = seanceRepository;
     }
 
     @Override
@@ -43,7 +53,11 @@ public class ICourseServicesImp implements ICourseServices {
     }
 
     @Override
+    @Transactional
     public void deleteCourse(Long id) {
+        // Cleanup related rows first to avoid FK violations on course deletion.
+        seanceRepository.deleteByCourseId(id);
+        resourceRepository.deleteByCourseId(id);
         courseRepository.deleteById(id);
     }
 

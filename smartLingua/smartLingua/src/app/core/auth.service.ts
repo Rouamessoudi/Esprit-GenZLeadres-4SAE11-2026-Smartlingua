@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { KeycloakService } from 'keycloak-angular';
+import { keycloakConnectConfig } from './keycloak.config';
 
 @Injectable({
     providedIn: 'root'
@@ -19,7 +20,7 @@ export class AuthService {
      */
     forgotPassword(): void {
         const kc = this.keycloakService.getKeycloakInstance();
-        const baseUrl = (kc as { authServerUrl?: string }).authServerUrl ?? 'http://localhost:8081';
+        const baseUrl = (kc as { authServerUrl?: string }).authServerUrl ?? keycloakConnectConfig.url;
         const realm = (kc as { realm?: string }).realm ?? 'smartlingua';
         const clientId = (kc as { clientId?: string }).clientId ?? 'angular';
         const redirectUri = encodeURIComponent(window.location.origin + (window.location.pathname || '/'));
@@ -51,6 +52,21 @@ export class AuthService {
     }
 
     hasRole(role: string): boolean {
-        return this.keycloakService.getUserRoles().includes(role);
+        const normalizedTarget = this.normalizeRole(role);
+        return this.getNormalizedRoles().includes(normalizedTarget);
+    }
+
+    isAdmin(): boolean {
+        return this.hasRole('admin');
+    }
+
+    private getNormalizedRoles(): string[] {
+        return this.keycloakService
+            .getUserRoles()
+            .map((r) => this.normalizeRole(r));
+    }
+
+    private normalizeRole(role: string): string {
+        return role.toUpperCase().replace(/^ROLE_/, '');
     }
 }

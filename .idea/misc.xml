@@ -13,6 +13,8 @@
         <option value="$PROJECT_DIR$/backend/backend/backEnd/microservices/courses/pom.xml" />
         <option value="$PROJECT_DIR$/backend/backend/backEnd/microservices/messaging/pom.xml" />
         <option value="$PROJECT_DIR$/backend/backend/backEnd/microservices/privetcours/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/backend/backEnd/config-server/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/backend/backEnd/microservices/adaptive-learning/pom.xml" />
       </list>
     </option>
   </component>

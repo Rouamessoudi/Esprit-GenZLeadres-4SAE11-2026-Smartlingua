@@ -1,0 +1,84 @@
+<section class="page">
+  <header class="head">
+    <div class="head-main">
+      <p class="eyebrow">EVALUATION FINALE</p>
+      <h1>Test final de niveau</h1>
+      <p class="subtitle">Confirmez votre niveau CECRL en une etape.</p>
+    </div>
+    <a routerLink="/adaptive/mon-niveau" class="back">Mon niveau</a>
+  </header>
+
+  @if (!keycloak.isLoggedIn()) {
+    <p class="banner warn">Connexion requise.</p>
+  }
+
+  <div class="grid-container" *ngIf="keycloak.isLoggedIn()">
+    <div class="card">
+      <h3>Resume etudiant</h3>
+      <p><strong>Nom:</strong> {{ preview?.learnerFullName || 'Apprenant' }}</p>
+      <p><strong>Niveau:</strong> {{ preview?.currentLevel || '—' }}</p>
+      <p><strong>Progression:</strong> {{ completionPercent | number:'1.0-0' }}%</p>
+    </div>
+
+    <div class="card">
+      <h3>Eligibilite</h3>
+      <ul class="eligibility-list">
+        <li [class.ok]="isEligibleForFinalTest" [class.no]="!isEligibleForFinalTest">
+          {{ isEligibleForFinalTest ? '✔' : '✖' }} Reading termine
+        </li>
+        <li [class.ok]="isEligibleForFinalTest" [class.no]="!isEligibleForFinalTest">
+          {{ isEligibleForFinalTest ? '✔' : '✖' }} Writing termine
+        </li>
+        <li [class.ok]="isEligibleForFinalTest" [class.no]="!isEligibleForFinalTest">
+          {{ isEligibleForFinalTest ? '✔' : '✖' }} Listening termine
+        </li>
+      </ul>
+      <p class="hint" *ngIf="!isEligibleForFinalTest">Le test est disponible a 100% de progression.</p>
+    </div>
+
+    <div class="card">
+      <h3>Lancer l'evaluation</h3>
+      <input
+        id="weakAreas"
+        type="text"
+        [(ngModel)]="weakAreas"
+        placeholder="Axes a renforcer (optionnel)"
+      />
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="passFinalTest()"
+        [disabled]="busy || !keycloak.isLoggedIn() || !isEligibleForFinalTest"
+      >
+        {{ busy ? actionLabel : 'Passer le test final' }}
+      </button>
+      <p class="hint" *ngIf="statusLine">{{ statusLine }}</p>
+    </div>
+  </div>
+
+  @if (result) {
+    <article class="card result" [class.pass]="result.passed" [class.fail]="!result.passed">
+      <h3>Resultat final</h3>
+      <div class="result-grid">
+        <div><span class="k">Score</span><strong>{{ result.score }}/100</strong></div>
+        <div><span class="k">Statut</span><strong>{{ result.passed ? 'Reussi' : 'Echoue' }}</strong></div>
+        <div><span class="k">Passage</span><strong>{{ result.currentLevelAtTest }} → {{ result.unlockedLevel }}</strong></div>
+      </div>
+      <p *ngIf="result.promotionMessage">{{ result.promotionMessage }}</p>
+      <div class="result-links">
+        <a routerLink="/learning-path">Voir mon Learning Path</a>
+        <a routerLink="/progression">Voir ma progression</a>
+      </div>
+    </article>
+
+    <article class="card ai" *ngIf="result.aiPostTestFeedback || quizSnapshot?.weakAreasAuto">
+      <h3>✨ Recommandation IA</h3>
+      <p>{{ result.aiPostTestFeedback || 'Analyse personnalisee indisponible.' }}</p>
+      <p *ngIf="quizSnapshot?.weakAreasAuto"><strong>Points faibles detectes :</strong> {{ quizSnapshot?.weakAreasAuto }}</p>
+    </article>
+  }
+
+  @if (error) {
+    <p class="banner err">{{ error }}</p>
+  }
+</section>

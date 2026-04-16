@@ -10,9 +10,11 @@
         <module name="forum" />
         <module name="courses" />
         <module name="privetcours" />
+        <module name="config-server" />
         <module name="exams" />
         <module name="eureka" />
         <module name="apiGateway" />
+        <module name="adaptive-learning" />
         <module name="users" />
         <module name="messaging" />
       </profile>
@@ -20,7 +22,9 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="adaptive-learning" options="-parameters" />
       <module name="apiGateway" options="-parameters" />
+      <module name="config-server" options="-parameters" />
       <module name="courses" options="-parameters" />
       <module name="eureka" options="-parameters" />
       <module name="exams" options="-parameters" />
