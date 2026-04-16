@@ -1,0 +1,77 @@
+<section class="assistant-page">
+  <div class="container layout">
+    <div class="chat-card card">
+      <div class="top-row">
+        <h1>English Assistant</h1>
+        <select [(ngModel)]="selectedLevel">
+          <option value="">Choose level</option>
+          @for (lvl of levels; track lvl) {
+            <option [value]="lvl">{{ lvl }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="chat-window">
+        @if (messages.length === 0) {
+          <p class="placeholder">Ask: "I am B1, give me playlists".</p>
+        } @else {
+          @for (m of messages; track $index) {
+            <div class="bubble" [class.user]="m.sender === 'user'" [class.bot]="m.sender === 'bot'">
+              {{ m.content }}
+            </div>
+          }
+        }
+      </div>
+
+      <div class="composer">
+        <input [(ngModel)]="message" placeholder="Type your question..." (keyup.enter)="send()" />
+        <button class="btn btn-primary" [disabled]="loading || !message.trim()" (click)="send()">
+          {{ loading ? 'Sending...' : 'Send' }}
+        </button>
+      </div>
+
+      @if (errorMessage) {
+        <p class="error">{{ errorMessage }}</p>
+      }
+    </div>
+
+    <div class="right-panel">
+      <div class="card resources-card">
+        <h2>Recommended Resources</h2>
+        @if (recommendations.length === 0) {
+          <p class="placeholder">Recommendations will appear here.</p>
+        } @else {
+          @for (res of recommendations; track res.id) {
+            <div class="resource-item">
+              <h3>{{ res.title }}</h3>
+              <p>{{ res.description }}</p>
+              <small>{{ res.level }} - {{ res.category }}</small>
+              <div class="resource-actions">
+                <a class="btn btn-secondary btn-sm" [href]="res.url" target="_blank" rel="noopener">Open YouTube</a>
+                <button class="btn btn-primary btn-sm" (click)="saveResource(res.id)">Save</button>
+              </div>
+              @if (saveFeedback[res.id]) {
+                <small class="feedback">{{ saveFeedback[res.id] }}</small>
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <div class="card history-card">
+        <h2>Chat History</h2>
+        @if (history.length === 0) {
+          <p class="placeholder">No history yet.</p>
+        } @else {
+          @for (h of history; track h.id) {
+            <div class="history-item">
+              <strong>{{ h.level || '-' }}</strong>
+              <p class="q">{{ h.message }}</p>
+              <p class="a">{{ h.response }}</p>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+</section>

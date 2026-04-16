@@ -5,12 +5,16 @@ import com.esprit.messaging.dto.LoginRequest;
 import com.esprit.messaging.dto.RegisterRequest;
 import com.esprit.messaging.entity.User;
 import com.esprit.messaging.repository.UserRepository;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,10 +24,19 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Environment environment;
+    private final DataSource dataSource;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthController(
+        UserRepository userRepository,
+        PasswordEncoder passwordEncoder,
+        Environment environment,
+        DataSource dataSource
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.environment = environment;
+        this.dataSource = dataSource;
     }
 
     @GetMapping("/health")
@@ -54,9 +67,16 @@ public class AuthController {
                 hash,
                 role
             );
-            user = userRepository.save(user);
-            userRepository.flush();
-            return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole()));
+            user = userRepository.saveAndFlush(user);
+
+            // Guardrail: only return success after verifying the row is visible in MySQL.
+            User persisted = userRepository.findByEmailIgnoreCase(user.getEmail()).orElse(null);
+            if (persisted == null || persisted.getId() == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Inscription non persistée en base MySQL. Réessaie et vérifie la connexion DB.");
+            }
+            return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new AuthResponse(persisted.getId(), persisted.getUsername(), persisted.getEmail(), persisted.getRole()));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de l'enregistrement : " + e.getMessage());
@@ -83,13 +103,34 @@ public class AuthController {
         return ResponseEntity.ok(users);
     }
 
-    /** Pour vérifier que les utilisateurs sont bien enregistrés en base */
+    /**
+     * Vérification rapide : base réelle, profil Spring, nom de table JPA.
+     * Les utilisateurs sont dans la table <strong>app_user</strong> (entité {@code User}), pas "users".
+     */
     @GetMapping("/debug-db")
     public ResponseEntity<java.util.Map<String, Object>> debugDb() {
         long count = userRepository.count();
         java.util.Map<String, Object> info = new java.util.HashMap<>();
         info.put("userCount", count);
-        info.put("database", "MySQL (smartlingua_messaging)");
+        info.put("usersTableName", "app_user");
+        info.put("expectedMySqlSchema", "smartlingua_messaging");
+        info.put("activeProfiles", Arrays.asList(environment.getActiveProfiles()));
+        String jdbcUrl = "unknown";
+        try (Connection c = dataSource.getConnection()) {
+            jdbcUrl = c.getMetaData().getURL();
+        } catch (Exception ignored) {
+        }
+        info.put("jdbcUrl", jdbcUrl);
+        boolean h2 = jdbcUrl.contains("h2:") || jdbcUrl.contains(":h2:");
+        boolean mysql = jdbcUrl.contains("mysql");
+        if (h2) {
+            info.put("storage", "H2 détecté (inattendu : le projet est configuré pour MySQL uniquement).");
+            info.put("howToSeeInMySql", "Vérifie la configuration JDBC et redémarre le microservice.");
+        } else if (mysql) {
+            info.put("storage", "MySQL — ouvre la base smartlingua_messaging et la table app_user.");
+        } else {
+            info.put("storage", "Autre SGBD (voir jdbcUrl).");
+        }
         return ResponseEntity.ok(info);
     }
 }

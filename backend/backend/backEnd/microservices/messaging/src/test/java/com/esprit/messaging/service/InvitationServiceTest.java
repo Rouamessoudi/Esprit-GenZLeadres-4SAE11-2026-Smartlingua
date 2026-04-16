@@ -1,16 +1,19 @@
 package com.esprit.messaging.service;
 
 import com.esprit.messaging.dto.InvitationDTO;
+import com.esprit.messaging.support.MysqlTestContainerBase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @Transactional
-class InvitationServiceTest {
+class InvitationServiceTest extends MysqlTestContainerBase {
 
     @Autowired
     private InvitationService invitationService;

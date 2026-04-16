@@ -35,6 +35,24 @@ export const routes: Routes = [
                 loadComponent: () =>
                     import('./front-office/chat/chat.component').then(m => m.ChatComponent),
             },
+            {
+                path: 'ai-assistant',
+                canActivate: [authGuard],
+                loadComponent: () =>
+                    import('./front-office/ai-assistant/ai-assistant-page.component').then(m => m.AiAssistantPageComponent),
+            },
+            {
+                path: 'english-assistant',
+                canActivate: [authGuard],
+                loadComponent: () =>
+                    import('./front-office/english-assistant/english-assistant-page.component').then(m => m.EnglishAssistantPageComponent),
+            },
+            {
+                path: 'translate',
+                canActivate: [authGuard],
+                loadComponent: () =>
+                    import('./front-office/translate/translate-page.component').then(m => m.TranslatePageComponent),
+            },
         ],
     },
     {

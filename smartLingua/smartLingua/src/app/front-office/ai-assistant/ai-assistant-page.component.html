@@ -1,0 +1,91 @@
+<!-- Page AI Assistant : historique (gauche) + fil de messages + saisie (droite). Route /ai-assistant, authGuard. -->
+<section class="ai-page container">
+  <aside class="left-panel" aria-label="Historique des conversations">
+    <div class="left-header">
+      <h2>AI Assistant</h2>
+      <button type="button" class="btn-primary" (click)="newConversation()">Nouvelle conversation</button>
+    </div>
+
+    @if (conversations.length === 0) {
+      <p class="muted">Aucune conversation pour le moment.</p>
+    } @else {
+      <ul class="conversation-list">
+        @for (c of conversations; track c.id) {
+          <li
+            [class.active]="selectedConversationId === c.id"
+            (click)="selectConversation(c)"
+            role="button"
+            tabindex="0"
+            (keydown.enter)="selectConversation(c)"
+          >
+            <div class="conv-title">{{ c.title || 'New conversation' }}</div>
+            <div class="conv-footer">
+              <span>{{ formatDate(c.updatedAt) }}</span>
+              <button type="button" class="danger-link" (click)="deleteConversation(c.id); $event.stopPropagation()">Supprimer</button>
+            </div>
+          </li>
+        }
+      </ul>
+      <button type="button" class="danger-outline" (click)="deleteAll()">Supprimer tout l'historique</button>
+    }
+  </aside>
+
+  <div class="chat-panel">
+    <header class="chat-header">
+      <h3>AI Assistant</h3>
+      <p>Ask grammar, vocabulary, and image-based questions.</p>
+    </header>
+
+    <div class="messages" id="ai-messages">
+      @if (!selectedConversationId && messages.length === 0) {
+        <div class="empty-state">Sélectionne une conversation ou crée-en une nouvelle.</div>
+      }
+
+      @for (m of messages; track m.id) {
+        <div class="msg" [class.user]="m.sender === 'USER'" [class.ai]="m.sender === 'AI'">
+          <div class="msg-meta">
+            <strong>{{ m.sender === 'USER' ? 'You' : 'AI' }}</strong>
+            <span>{{ formatDate(m.timestamp) }}</span>
+          </div>
+          <div class="msg-content">{{ m.content }}</div>
+          @if (m.imageName) {
+            <div class="img-meta">Fichier: {{ m.imageName }} ({{ m.imageContentType || 'type inconnu' }})</div>
+          }
+        </div>
+      }
+
+      @if (loading) {
+        <div class="msg ai"><div class="msg-content">L’assistant répond…</div></div>
+      }
+    </div>
+
+    @if (errorMessage) {
+      <p class="error" role="alert">{{ errorMessage }}</p>
+    }
+
+    <div class="composer">
+      <textarea
+        [(ngModel)]="messageInput"
+        [disabled]="loading"
+        placeholder="Écris ta question…"
+        rows="3"
+      ></textarea>
+      <div class="actions">
+        <input
+          #fileInput
+          type="file"
+          accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf"
+          (change)="onFileSelected($event)"
+          hidden
+        />
+        <button type="button" class="upload-btn" (click)="fileInput.click()" [disabled]="loading" title="Ajouter image ou PDF">
+          <span class="upload-plus" aria-hidden="true">+</span>
+        </button>
+        @if (selectedImageName) {
+          <span class="file-label">{{ selectedImageName }}</span>
+        }
+        <button type="button" class="btn-primary" (click)="send()" [disabled]="loading">Envoyer</button>
+      </div>
+    </div>
+  </div>
+</section>

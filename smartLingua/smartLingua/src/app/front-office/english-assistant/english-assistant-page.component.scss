@@ -1,0 +1,21 @@
+.assistant-page { padding: 24px 0 40px; }
+.layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; align-items: start; }
+.chat-card, .resources-card, .history-card { padding: 16px; }
+.top-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+.top-row select { min-width: 130px; border: 1px solid #ddd; border-radius: 8px; padding: 8px; }
+.chat-window { min-height: 280px; max-height: 420px; overflow: auto; border: 1px solid #eee; border-radius: 10px; padding: 12px; background: #fff; }
+.bubble { padding: 10px 12px; border-radius: 10px; margin-bottom: 8px; max-width: 85%; }
+.bubble.user { margin-left: auto; background: rgba(108,92,231,0.12); }
+.bubble.bot { background: rgba(0,0,0,0.05); }
+.composer { margin-top: 10px; display: flex; gap: 10px; }
+.composer input { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 10px; }
+.error { color: #c62828; margin-top: 8px; }
+.right-panel { display: flex; flex-direction: column; gap: 12px; }
+.resource-item, .history-item { border: 1px solid #eee; border-radius: 10px; padding: 10px; margin-top: 10px; background: #fff; }
+.resource-item h3 { font-size: 1rem; margin-bottom: 4px; }
+.resource-actions { display: flex; gap: 8px; margin-top: 8px; }
+.history-item .q { color: #222; margin: 4px 0; }
+.history-item .a { color: #555; margin: 0; font-size: .92rem; }
+.placeholder { color: #8a8a8a; }
+.feedback { color: #2e7d32; display: inline-block; margin-top: 6px; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }

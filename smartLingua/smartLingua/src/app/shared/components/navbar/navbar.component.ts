@@ -27,6 +27,15 @@ import { Subscription } from 'rxjs';
             <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">Home</a></li>
             <li><a routerLink="/courses" routerLinkActive="active" (click)="closeMenu()">Courses</a></li>
             <li><a routerLink="/chat" routerLinkActive="active" (click)="navigateToChat($event)">Chat</a></li>
+            <li><a routerLink="/ai-assistant" routerLinkActive="active" (click)="closeMenu()">AI Assistant</a></li>
+            @if (isLoggedIn) {
+            <li>
+              <a routerLink="/translate" routerLinkActive="active" (click)="closeMenu()">
+                <span class="material-icons-round nav-link-icon">language</span>
+                Translate
+              </a>
+            </li>
+            }
             <li><a href="#features" (click)="closeMenu()">Features</a></li>
             <li><a href="#about" (click)="closeMenu()">About</a></li>
           </ul>
