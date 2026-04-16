@@ -235,6 +235,7 @@ public class AdaptiveLearningFacadeService {
         path.setCreatedAt(Instant.now());
         path.setUpdatedAt(Instant.now());
 
+        // Le parcours suit le niveau courant (mis à jour en cas de promotion après test final).
         List<CourseExternalDto> courses = safeCoursesByLevel(effectiveLevel);
         List<LearningPathItem> items = new ArrayList<>();
         int order = 1;
@@ -311,10 +312,31 @@ public class AdaptiveLearningFacadeService {
         return toLearningPathItemView(item);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public ProgressView getProgress(Long studentId) {
         StudentProgress progress = progressRepository.findTopByStudentIdOrderByUpdatedAtDesc(studentId)
                 .orElseThrow(() -> new NotFoundException("Progress not found for student " + studentId));
+        // Auto-alignement défensif: si les items du LearningPath ont évolué mais que la table
+        // de progression est restée ancienne, on recalcule ici pour éviter des incohérences UI.
+        if (progress.getLearningPathId() != null) {
+            List<LearningPathItem> items = learningPathItemRepository
+                    .findByLearningPath_IdOrderByRecommendedOrderAsc(progress.getLearningPathId());
+            int total = items.size();
+            int done = (int) items.stream().filter(i -> i.getStatus() == LearningPathItemStatus.DONE).count();
+            double pctLive = total == 0 ? 0.0 : (done * 100.0) / total;
+            boolean drift = progress.getTotalItems() == null || progress.getCompletedItems() == null
+                    || progress.getCompletionPercentage() == null
+                    || progress.getTotalItems() != total
+                    || progress.getCompletedItems() != done
+                    || Math.abs(progress.getCompletionPercentage() - pctLive) > 0.0001;
+            if (drift) {
+                progress.setTotalItems(total);
+                progress.setCompletedItems(done);
+                progress.setCompletionPercentage(pctLive);
+                progress.setUpdatedAt(Instant.now());
+                progressRepository.save(progress);
+            }
+        }
         StudentGamification gamification = gamificationRepository.findByStudentId(studentId)
                 .orElseGet(StudentGamification::new);
         long alerts = alertRepository.countByStudentIdAndResolvedFalse(studentId);
@@ -393,7 +415,7 @@ public class AdaptiveLearningFacadeService {
                     request.score(),
                     false,
                     profile.getCurrentLevel(),
-                    "Test non réussi. Révisez les points faibles indiqués puis retentez lorsque vous êtes prêt.",
+                    "Vous n'avez pas reussi le test final. Continuez a travailler votre niveau actuel.",
                     null,
                     levelBefore,
                     idFail.fullName(),
@@ -412,11 +434,7 @@ public class AdaptiveLearningFacadeService {
         LearningPathView regenerated = generateLearningPath(new GenerateLearningPathRequest(request.studentId()));
         pedagogyService.buildAndStoreRecommendationsAfterLevelKnown(request.studentId(), unlockedLevel);
 
-        String promo = String.format(
-                "Félicitations ! Vous passez du niveau %s au niveau %s. Un nouveau parcours a été généré.",
-                levelBefore,
-                unlockedLevel
-        );
+        String promo = "Bravo, vous avez reussi le test final. Vous passez au niveau " + unlockedLevel + ".";
         LearnerIdentity idOk = appUserLookup.findLearnerIdentity(request.studentId());
         String aiOk = aiRecommendationService.buildPostLevelTestMessage(
                 true, request.score(), levelBefore, unlockedLevel, request.weakAreas());
@@ -476,6 +494,9 @@ public class AdaptiveLearningFacadeService {
                 .orElseThrow(() -> new NotFoundException("Student profile not found for student " + studentId));
         ensureMinimumTargetLevel(profile);
         StudentGamification gamification = gamificationRepository.findByStudentId(studentId).orElseGet(StudentGamification::new);
+        LevelTestResultSnapshot lastLevelTest = levelTestResultRepository.findTopByStudentIdOrderByTestDateDesc(studentId)
+                .map(this::toLevelTestSnapshot)
+                .orElse(null);
         ProgressView progressView = null;
         if (progressRepository.findTopByStudentIdOrderByUpdatedAtDesc(studentId).isPresent()) {
             progressView = getProgress(studentId);
@@ -484,7 +505,9 @@ public class AdaptiveLearningFacadeService {
         List<AlertView> alerts = alertRepository.findByStudentIdAndResolvedFalseOrderByCreatedAtDesc(studentId).stream()
                 .map(this::toAlertView)
                 .toList();
-        boolean hasPlacementResult = placementRepository.findTopByStudentIdOrderByTestDateDesc(studentId).isPresent();
+        boolean hasPlacementResult = placementRepository.findTopByStudentIdOrderByTestDateDesc(studentId).isPresent()
+                || lastLevelTest != null
+                || profile.getCurrentLevel() != CourseLevel.A1;
         LearnerIdentity id = appUserLookup.findLearnerIdentity(studentId);
         String aiProfile = progressView != null ? progressView.aiProgressSummary() : null;
         if (aiProfile == null || aiProfile.isBlank()) {
@@ -507,12 +530,27 @@ public class AdaptiveLearningFacadeService {
                 gamification.getBadges() == null ? "" : gamification.getBadges(),
                 gamification.getLastPromotionMessage(),
                 gamification.getLastPromotionAt(),
+                lastLevelTest,
                 progressView,
                 recs,
                 alerts,
                 id.fullName(),
                 id.email(),
                 aiProfile
+        );
+    }
+
+    private LevelTestResultSnapshot toLevelTestSnapshot(StudentLevelTestResult r) {
+        String message = Boolean.TRUE.equals(r.getPassed())
+                ? "Bravo, vous avez reussi le test final. Vous passez au niveau " + r.getUnlockedLevel() + "."
+                : "Vous n'avez pas reussi le test final. Continuez a travailler votre niveau actuel.";
+        return new LevelTestResultSnapshot(
+                r.getScore(),
+                Boolean.TRUE.equals(r.getPassed()),
+                r.getCurrentLevel(),
+                r.getUnlockedLevel(),
+                message,
+                r.getTestDate()
         );
     }
 

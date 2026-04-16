@@ -143,6 +143,11 @@ input:focus {
   background: #fef2f2;
 }
 
+.result.persisted {
+  border-color: #c7d2fe;
+  background: #f8faff;
+}
+
 .result-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));

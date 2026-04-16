@@ -133,12 +133,22 @@ public class AdaptiveDtos {
             String badges,
             String lastPromotionMessage,
             Instant lastPromotionAt,
+            LevelTestResultSnapshot lastLevelTest,
             ProgressView progress,
             List<RecommendationView> recommendations,
             List<AlertView> openAlerts,
             String learnerFullName,
             String learnerEmail,
             String aiProgressSummary
+    ) {}
+
+    public record LevelTestResultSnapshot(
+            Integer score,
+            boolean passed,
+            CourseLevel levelBeforeTest,
+            CourseLevel levelAfterTest,
+            String message,
+            Instant testDate
     ) {}
 
     public record AlertView(

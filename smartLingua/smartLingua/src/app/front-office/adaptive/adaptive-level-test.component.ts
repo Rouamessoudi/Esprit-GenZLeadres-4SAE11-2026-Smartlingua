@@ -59,6 +59,26 @@ export class AdaptiveLevelTestComponent implements OnInit {
     return 'Traitement en cours...';
   }
 
+  get hasAlreadyRecordedQuizResultError(): boolean {
+    return this.error.toLowerCase().includes('déjà été enregistré')
+      || this.error.toLowerCase().includes('deja ete enregistre');
+  }
+
+  get canInferPromotionFromProfile(): boolean {
+    return !!this.preview?.lastPromotionMessage;
+  }
+
+  get lastRecordedResult() {
+    return this.preview?.lastLevelTest ?? null;
+  }
+
+  get inferredFinalStatusLabel(): string {
+    if (this.canInferPromotionFromProfile) {
+      return 'Réussi';
+    }
+    return 'Non réussi (ou déjà traité)';
+  }
+
   passFinalTest(): void {
     if (this.busy || !this.keycloak.isLoggedIn()) {
       return;
@@ -158,13 +178,33 @@ export class AdaptiveLevelTestComponent implements OnInit {
       next: (res) => {
         this.result = res;
         this.adaptiveRecorded = true;
+        this.refreshProfilePreview();
         this.statusLine = '';
         this.busy = false;
       },
       error: (e) => {
         this.error = readApiErrorMessage(e, 'Erreur enregistrement Adaptive — détail indisponible.');
+        if (this.hasAlreadyRecordedQuizResultError) {
+          // Le test est déjà conservé côté backend: on rafraîchit le profil
+          // pour afficher l'état de niveau le plus récent.
+          // Puis on réinitialise l'état local pour que le prochain clic
+          // démarre une nouvelle tentative au lieu de re-soumettre la même.
+          this.refreshProfilePreview();
+          this.attemptId = null;
+          this.quizSnapshot = null;
+          this.adaptiveRecorded = false;
+        }
         this.statusLine = '';
         this.busy = false;
+      }
+    });
+  }
+
+  private refreshProfilePreview(): void {
+    this.adaptive.getProfileMe().subscribe({
+      next: (p) => (this.preview = p),
+      error: () => {
+        /* optionnel */
       }
     });
   }

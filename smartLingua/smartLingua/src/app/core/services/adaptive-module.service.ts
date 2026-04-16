@@ -95,6 +95,15 @@ export interface LevelTestResponse {
   aiPostTestFeedback: string;
 }
 
+export interface LevelTestResultSnapshot {
+  score: number;
+  passed: boolean;
+  levelBeforeTest: CourseLevel;
+  levelAfterTest: CourseLevel;
+  message: string;
+  testDate: string;
+}
+
 export interface ProfileView {
   studentId: number;
   currentLevel: CourseLevel;
@@ -106,6 +115,7 @@ export interface ProfileView {
   badges: string;
   lastPromotionMessage: string | null;
   lastPromotionAt: string | null;
+  lastLevelTest: LevelTestResultSnapshot | null;
   progress: ProgressView | null;
   recommendations: RecommendationView[];
   openAlerts: AlertView[];

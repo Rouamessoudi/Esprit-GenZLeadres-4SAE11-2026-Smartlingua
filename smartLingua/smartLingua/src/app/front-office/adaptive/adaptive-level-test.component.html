@@ -78,7 +78,25 @@
     </article>
   }
 
-  @if (error) {
+  @if (!result && (lastRecordedResult || hasAlreadyRecordedQuizResultError)) {
+    <article class="card result persisted" [class.pass]="canInferPromotionFromProfile">
+      <h3>Dernier résultat enregistré</h3>
+      <div class="result-grid">
+        <div><span class="k">Statut</span><strong>{{ lastRecordedResult ? (lastRecordedResult.passed ? 'Réussi' : 'Échoué') : inferredFinalStatusLabel }}</strong></div>
+        <div><span class="k">Score</span><strong>{{ lastRecordedResult ? (lastRecordedResult.score + '/100') : '—' }}</strong></div>
+        <div><span class="k">Niveau avant test</span><strong>{{ lastRecordedResult?.levelBeforeTest || '—' }}</strong></div>
+        <div><span class="k">Niveau après test</span><strong>{{ lastRecordedResult?.levelAfterTest || (preview?.currentLevel || '—') }}</strong></div>
+      </div>
+      <p>{{ lastRecordedResult?.message || 'Le test final est déjà enregistré côté serveur.' }}</p>
+      <div class="result-links">
+        <a routerLink="/adaptive/mon-niveau">Voir mon niveau</a>
+        <a routerLink="/courses">Voir les cours accessibles</a>
+        <a routerLink="/progression">Voir ma progression</a>
+      </div>
+    </article>
+  }
+
+  @if (error && !hasAlreadyRecordedQuizResultError) {
     <p class="banner err">{{ error }}</p>
   }
 </section>

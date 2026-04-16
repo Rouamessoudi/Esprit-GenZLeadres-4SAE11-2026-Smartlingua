@@ -89,7 +89,7 @@ import { takeUntil, timeout, timer } from 'rxjs';
           <p class="enroll-body">
             Vous pouvez suivre des cours <strong>à votre niveau ou à un niveau inférieur</strong> (ex. B1 → A1 autorisé).
             Cette page affiche votre <strong>parcours adaptatif</strong> : il est généré selon <strong>votre niveau actuel</strong>
-            (cible {{ path?.targetLevel ?? '…' }}), pas seulement le cours cliqué — c’est pourquoi vous voyez surtout des étapes à ce niveau.
+            (après réussite au test final, le niveau actuel est promu), pas seulement selon le cours cliqué.
           </p>
           <p class="enroll-body muted">
             Pour étudier le cours sélectionné (vidéos, podcasts), ouvrez

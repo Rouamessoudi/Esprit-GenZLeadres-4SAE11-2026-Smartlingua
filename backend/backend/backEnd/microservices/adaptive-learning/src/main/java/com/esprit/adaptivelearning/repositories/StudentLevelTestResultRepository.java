@@ -9,4 +9,6 @@ public interface StudentLevelTestResultRepository extends JpaRepository<StudentL
     boolean existsByStudentIdAndPassedFalseAndTestDateAfter(Long studentId, Instant after);
 
     boolean existsByQuizAttemptId(Long quizAttemptId);
+
+    java.util.Optional<StudentLevelTestResult> findTopByStudentIdOrderByTestDateDesc(Long studentId);
 }
