@@ -1,0 +1,36 @@
+<div class="detail-container" *ngIf="post">
+  <button (click)="back()" class="btn-back">← Retour</button>
+
+  <div class="post-detail">
+    <h1>{{ post.title }}</h1>
+    <p class="meta">
+      <span *ngIf="post.category" class="category">{{ post.category }}</span>
+      <span>{{ post.createdAt | date:'medium' }}</span>
+    </p>
+    <div class="content">{{ post.content }}</div>
+  </div>
+
+  <div class="comments-section" *ngIf="post.id">
+    <h2>Commentaires ({{ comments.length }})</h2>
+    <div class="add-comment">
+      <textarea
+        [(ngModel)]="newComment"
+        placeholder="Ajouter un commentaire..."
+        rows="3"
+        [disabled]="submitting"
+      ></textarea>
+      <button (click)="submitComment()" [disabled]="!newComment.trim() || submitting" class="btn btn-primary">
+        {{ submitting ? 'Envoi...' : 'Publier' }}
+      </button>
+    </div>
+    <div class="comments-list">
+      <div *ngFor="let comment of comments" class="comment-card">
+        <p class="comment-content">{{ comment.content }}</p>
+        <p class="comment-meta">{{ comment.createdAt | date:'short' }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="loading">Chargement...</div>
+<div *ngIf="error && !post" class="error">{{ error }}</div>

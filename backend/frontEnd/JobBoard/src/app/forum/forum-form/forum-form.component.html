@@ -1,0 +1,24 @@
+<div class="form-container">
+  <h1>Nouveau post</h1>
+  <div *ngIf="error" class="error">{{ error }}</div>
+  <form (ngSubmit)="submit()">
+    <div class="form-group">
+      <label>Titre *</label>
+      <input type="text" [(ngModel)]="post.title" name="title" required placeholder="Titre du post" />
+    </div>
+    <div class="form-group">
+      <label>Catégorie</label>
+      <input type="text" [(ngModel)]="post.category" name="category" placeholder="Ex: Grammar, Vocabulary..." />
+    </div>
+    <div class="form-group">
+      <label>Contenu *</label>
+      <textarea [(ngModel)]="post.content" name="content" rows="6" required placeholder="Contenu de votre post"></textarea>
+    </div>
+    <div class="form-actions">
+      <button type="button" (click)="cancel()" class="btn btn-secondary">Annuler</button>
+      <button type="submit" [disabled]="submitting" class="btn btn-primary">
+        {{ submitting ? 'Publication...' : 'Publier' }}
+      </button>
+    </div>
+  </form>
+</div>

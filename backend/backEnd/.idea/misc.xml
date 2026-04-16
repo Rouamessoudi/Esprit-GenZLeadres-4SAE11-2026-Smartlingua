@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/microservices/notification/pom.xml" />
+        <option value="$PROJECT_DIR$/eureka/pom.xml" />
+        <option value="$PROJECT_DIR$/gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/microservices/candidat/pom.xml" />
+        <option value="$PROJECT_DIR$/microservices/meeting/pom.xml" />
+        <option value="$PROJECT_DIR$/microservices/condidature/pom.xml" />
+        <option value="$PROJECT_DIR$/microservices/job/pom.xml" />
+        <option value="$PROJECT_DIR$/config-server/pom.xml" />
+        <option value="$PROJECT_DIR$/microservices/courses/pom.xml" />
+        <option value="$PROJECT_DIR$/microservices/demo/pom.xml" />
+        <option value="$PROJECT_DIR$/microservices/users/pom.xml" />
+        <option value="$PROJECT_DIR$/../backEndmicroservices/users/pom.xml" />
+        <option value="$PROJECT_DIR$/microservices/quiz/pom.xml" />
+        <option value="$PROJECT_DIR$/microservices/exams/pom.xml" />
+        <option value="$PROJECT_DIR$/microservices/forum/pom.xml" />
+        <option value="$PROJECT_DIR$/microservices/privetcours/pom.xml" />
+        <option value="$PROJECT_DIR$/microservices/messaging/pom.xml" />
+        <option value="$PROJECT_DIR$/apiGateway/pom.xml" />
+      </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/microservices/candidat/pom.xml" />
+        <option value="$PROJECT_DIR$/microservices/demo/pom.xml" />
+        <option value="$PROJECT_DIR$/microservices/job/pom.xml" />
+        <option value="$PROJECT_DIR$/../backEndmicroservices/users/pom.xml" />
+      </set>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="openjdk-23" project-jdk-type="JavaSDK" />
+</project>

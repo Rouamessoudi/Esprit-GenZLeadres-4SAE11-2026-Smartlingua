@@ -1,0 +1,21 @@
+<div class="announcements-container">
+  <div class="announcements-header">
+    <h1>Annonces</h1>
+    <button (click)="toggleShowAll()" class="btn btn-secondary">
+      {{ showAll ? 'Annonces actives uniquement' : 'Toutes les annonces' }}
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Chargement...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngIf="!loading && !error" class="announcements-list">
+    <div *ngFor="let a of announcements" class="announcement-card">
+      <h3>{{ a.title }}</h3>
+      <p class="meta">{{ a.publishedAt | date:'medium' }}</p>
+      <p class="content">{{ a.content }}</p>
+      <span *ngIf="!a.isActive" class="badge inactive">Inactive</span>
+    </div>
+    <div *ngIf="announcements.length === 0" class="empty">Aucune annonce.</div>
+  </div>
+</div>
