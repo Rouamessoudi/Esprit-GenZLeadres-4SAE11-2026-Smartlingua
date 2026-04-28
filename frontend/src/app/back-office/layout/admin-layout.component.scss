@@ -1,0 +1,135 @@
+.admin-layout {
+  min-height: 100vh;
+  background: #f4f5f9;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 24px;
+  background: #fff;
+  border-bottom: 1px solid #e9ecef;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text, #1a1a2e);
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-decoration: none;
+
+  .material-icons-round {
+    font-size: 1.4rem;
+    color: var(--primary, #6C5CE7);
+  }
+
+  &:hover {
+    color: var(--primary, #6C5CE7);
+  }
+}
+
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.topbar-link {
+  padding: 8px 14px;
+  border-radius: 6px;
+  color: #495057;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+
+  &:hover {
+    background: #f1f3f5;
+    color: var(--primary, #6C5CE7);
+  }
+
+  &.active {
+    background: rgba(108, 92, 231, 0.1);
+    color: var(--primary, #6C5CE7);
+  }
+
+  &.topbar-link-outline {
+    margin-left: 8px;
+    border: 1px solid #dee2e6;
+    font-size: 0.85rem;
+
+    &:hover {
+      border-color: var(--primary, #6C5CE7);
+      color: var(--primary, #6C5CE7);
+    }
+  }
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar-user {
+  font-size: 0.85rem;
+  color: #495057;
+  font-weight: 500;
+}
+
+.topbar-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #868e96;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+
+  .material-icons-round {
+    font-size: 1.2rem;
+  }
+
+  &:hover {
+    background: #fff5f5;
+    color: #e74c3c;
+  }
+}
+
+.admin-content {
+  flex: 1;
+  padding: 24px;
+}
+
+@media (max-width: 768px) {
+  .admin-topbar {
+    padding: 0 16px;
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 56px;
+    gap: 8px;
+  }
+
+  .topbar-nav {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .admin-content {
+    padding: 16px;
+  }
+}

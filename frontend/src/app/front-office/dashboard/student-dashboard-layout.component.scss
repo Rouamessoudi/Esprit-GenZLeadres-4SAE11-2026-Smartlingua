@@ -1,0 +1,141 @@
+.dashboard-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  background: #f4f7ff;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  background: linear-gradient(180deg, #0f3fbf 0%, #1b56e5 100%);
+  color: #fff;
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.brand {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+}
+
+.menu {
+  display: grid;
+  gap: 6px;
+}
+
+.menu a {
+  color: rgba(255, 255, 255, 0.92);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.menu a:hover {
+  background: rgba(255, 255, 255, 0.14);
+  transform: translateX(2px);
+}
+
+.menu a.active {
+  background: #fff;
+  color: #1743c8;
+  font-weight: 600;
+}
+
+.content-area {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid #e6ebff;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #1a2a57;
+}
+
+.topbar p {
+  margin: 4px 0 0;
+  color: #5a6a93;
+  font-size: 0.92rem;
+}
+
+.top-nav {
+  background: #fff;
+  border-bottom: 1px solid #e6ebff;
+  padding: 10px 24px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.top-nav a {
+  text-decoration: none;
+  color: #3e4b77;
+  border: 1px solid #dce3ff;
+  background: #f9faff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.top-nav a.active {
+  background: #ece9ff;
+  color: #4d3fca;
+  border-color: #cfc5ff;
+}
+
+.logout {
+  border: none;
+  background: #eaf0ff;
+  color: #214bcf;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.content {
+  padding: 20px 24px;
+}
+
+@media (max-width: 960px) {
+  .dashboard-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+  }
+
+  .top-nav {
+    padding: 10px 12px;
+  }
+}
