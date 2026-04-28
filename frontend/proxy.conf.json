@@ -1,0 +1,62 @@
+{
+  "/api-proxy/courses": {
+    "target": "http://localhost:8093",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api-proxy/courses": "/courses"
+    },
+    "logLevel": "warn"
+  },
+  "/api/adaptive": {
+    "target": "http://localhost:8094",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/api-proxy/quiz": {
+    "target": "http://127.0.0.1:8088",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api-proxy/quiz": ""
+    },
+    "logLevel": "warn"
+  },
+  "/api-proxy/ai": {
+    "target": "http://127.0.0.1:8095",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api-proxy/ai": ""
+    },
+    "logLevel": "warn"
+  },
+  "/api-proxy/messaging": {
+    "target": "http://127.0.0.1:8092",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api-proxy/messaging": ""
+    },
+    "logLevel": "warn"
+  },
+  "/api-proxy/forum": {
+    "target": "http://127.0.0.1:8096",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api-proxy/forum": ""
+    },
+    "logLevel": "warn"
+  },
+  "/api-proxy/users": {
+    "target": "http://localhost:8087",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api-proxy/users": ""
+    },
+    "logLevel": "warn"
+  }
+}
