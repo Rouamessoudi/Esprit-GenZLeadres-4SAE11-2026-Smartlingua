@@ -1,10 +1,7 @@
 pipeline {
   agent any
 
-  tools {
-    jdk 'jdk17'
-    maven 'maven3'
-  }
+  // Utilise JDK et Maven du PATH (WSL / agent), sans Global Tool Configuration Jenkins.
 
   environment {
     SONAR_PROJECT_KEY = 'smartlingua-backend'
@@ -12,7 +9,6 @@ pipeline {
 
   options {
     timestamps()
-    ansiColor('xterm')
   }
 
   stages {
@@ -22,7 +18,7 @@ pipeline {
       }
     }
 
-    stage('Backend CI') {
+    stage('Test') {
       steps {
         script {
           def services = [
@@ -49,9 +45,46 @@ pipeline {
                   set -e
                   if [ -x "./mvnw" ]; then
                     ./mvnw test
-                    ./mvnw clean package
                   else
                     mvn test
+                  fi
+                '''
+              }
+            }
+          }
+          parallel branches
+        }
+      }
+    }
+
+    stage('Build') {
+      steps {
+        script {
+          def services = [
+            'backend/apiGateway',
+            'backend/config-server',
+            'backend/eureka',
+            'backend/microservices/users',
+            'backend/microservices/forum',
+            'backend/microservices/messaging',
+            'backend/microservices/courses',
+            'backend/microservices/quiz',
+            'backend/microservices/exams',
+            'backend/microservices/adaptive-learning',
+            'backend/microservices/ai-assistant-service',
+            'backend/microservices/privetcours'
+          ]
+
+          def branches = [:]
+          for (int i = 0; i < services.size(); i++) {
+            def svc = services[i]
+            branches[svc] = {
+              dir(svc) {
+                sh '''
+                  set -e
+                  if [ -x "./mvnw" ]; then
+                    ./mvnw clean package
+                  else
                     mvn clean package
                   fi
                 '''

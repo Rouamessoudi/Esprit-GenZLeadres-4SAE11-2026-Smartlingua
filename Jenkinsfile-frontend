@@ -1,9 +1,7 @@
 pipeline {
   agent any
 
-  tools {
-    nodejs 'node20'
-  }
+  // Utilise Node.js et npm du PATH (WSL / agent), sans Global Tool Configuration Jenkins.
 
   environment {
     CHROME_BIN = '/usr/bin/google-chrome'
@@ -12,7 +10,6 @@ pipeline {
 
   options {
     timestamps()
-    ansiColor('xterm')
   }
 
   stages {
