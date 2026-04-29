@@ -1,17 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ExternalStorageConfigurationManager" enabled="true" />
-  <component name="KubernetesApiProvider"><![CDATA[{}]]></component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>
-        <option value="$PROJECT_DIR$/backend/backend/backEnd/eureka/pom.xml" />
-        <option value="$PROJECT_DIR$/backend/backend/backEnd/apiGateway/pom.xml" />
-        <option value="$PROJECT_DIR$/backend/backend/backEnd/microservices/quiz/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/apiGateway/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/config-server/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/eureka/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/microservices/users/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/microservices/quiz/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/microservices/privetcours/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/microservices/messaging/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/microservices/forum/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/microservices/exams/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/microservices/courses/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/microservices/ai-assistant-service/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/microservices/adaptive-learning/pom.xml" />
       </list>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_23" default="true" project-jdk-name="23" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="17" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>

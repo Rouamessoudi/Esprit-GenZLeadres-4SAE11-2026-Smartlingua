@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { CourseApiService, CourseDto, CourseLevel, ResourceType } from '../../core/services/course-api.service';
 import { AuthService } from '../../core/auth.service';
@@ -21,7 +21,15 @@ import { AuthService } from '../../core/auth.service';
         <label for="title">Titre <span class="required">*</span></label>
         <input id="title" type="text" formControlName="title">
         @if (form.get('title')?.invalid && form.get('title')?.touched) {
-          <span class="error-msg">Le titre est obligatoire (min. 2 caractères).</span>
+          <span class="error-msg">
+            {{
+              form.get('title')?.errors?.['required'] ? 'Le titre est obligatoire.' :
+              form.get('title')?.errors?.['minlength'] ? 'Le titre doit contenir au moins 2 caracteres.' :
+              form.get('title')?.errors?.['maxlength'] ? 'Le titre ne doit pas depasser 200 caracteres.' :
+              form.get('title')?.errors?.['pattern'] ? 'Le titre ne peut pas etre uniquement numerique.' :
+              'Titre invalide.'
+            }}
+          </span>
         }
       </div>
 
@@ -46,10 +54,19 @@ import { AuthService } from '../../core/auth.service';
         <div class="form-group">
           <label for="startDate">Date de début</label>
           <input id="startDate" type="date" formControlName="startDate">
+          @if (form.hasError('datePair') && form.get('startDate')?.touched) {
+            <span class="error-msg">Renseignez aussi la date de fin.</span>
+          }
         </div>
         <div class="form-group">
           <label for="endDate">Date de fin</label>
           <input id="endDate" type="date" formControlName="endDate">
+          @if (form.hasError('datePair') && form.get('endDate')?.touched) {
+            <span class="error-msg">Renseignez aussi la date de debut.</span>
+          }
+          @if (form.hasError('dateRange') && form.get('endDate')?.touched) {
+            <span class="error-msg">La date de fin doit etre posterieure ou egale a la date de debut.</span>
+          }
         </div>
       </div>
 
@@ -123,15 +140,18 @@ export class CourseFormComponent implements OnInit {
     private route: ActivatedRoute,
     private authService: AuthService
   ) {
-    this.form = this.fb.group({
-      title: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(200)]],
-      description: ['', [Validators.maxLength(1000)]],
-      level: ['A1', [Validators.required]],
-      startDate: [''],
-      endDate: [''],
-      price: [null as number | null, [Validators.min(0)]],
-      autoInjectMediaPack: [true]
-    });
+    this.form = this.fb.group(
+      {
+        title: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(200), Validators.pattern(/\D/)]],
+        description: ['', [Validators.maxLength(1000)]],
+        level: ['A1', [Validators.required]],
+        startDate: [''],
+        endDate: [''],
+        price: [null as number | null, [Validators.min(0)]],
+        autoInjectMediaPack: [true]
+      },
+      { validators: [this.datePairValidator, this.dateRangeValidator] }
+    );
   }
 
   ngOnInit() {
@@ -157,7 +177,10 @@ export class CourseFormComponent implements OnInit {
   }
 
   submit() {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.saving = true;
     this.submitError = '';
     const v = this.form.value;
@@ -191,6 +214,29 @@ export class CourseFormComponent implements OnInit {
         this.saving = false;
       }
     });
+  }
+
+  private datePairValidator(control: AbstractControl): { datePair: true } | null {
+    const start = (control.get('startDate')?.value ?? '').toString().trim();
+    const end = (control.get('endDate')?.value ?? '').toString().trim();
+    if ((start && !end) || (!start && end)) {
+      return { datePair: true };
+    }
+    return null;
+  }
+
+  private dateRangeValidator(control: AbstractControl): { dateRange: true } | null {
+    const startRaw = (control.get('startDate')?.value ?? '').toString().trim();
+    const endRaw = (control.get('endDate')?.value ?? '').toString().trim();
+    if (!startRaw || !endRaw) {
+      return null;
+    }
+    const start = new Date(startRaw);
+    const end = new Date(endRaw);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      return null;
+    }
+    return end < start ? { dateRange: true } : null;
   }
 
   private async injectDefaultMediaPack(courseId: number, level: CourseLevel): Promise<void> {

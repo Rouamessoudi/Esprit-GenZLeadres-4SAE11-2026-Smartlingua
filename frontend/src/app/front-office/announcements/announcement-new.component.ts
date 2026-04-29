@@ -47,13 +47,25 @@ export class AnnouncementNewComponent {
   private announcementBasePath = '/student/announcements';
 
   constructor(private http: HttpClient, private router: Router, private authService: AuthService, private community: CommunityDataService) {
-    this.announcementBasePath = this.authService.isTeacher() ? '/teacher/announcements' : '/student/announcements';
+    this.announcementBasePath = this.authService.isAdmin()
+      ? '/admin/announcements'
+      : (this.authService.isTeacher() ? '/teacher/announcements' : '/student/announcements');
     if (!this.authService.isTeacher() && !this.authService.isAdmin()) {
       void this.router.navigate(['/student/announcements']);
     }
   }
 
   submit(): void {
+    const titleError = this.validateTitle(this.title);
+    if (titleError) {
+      this.error = titleError;
+      return;
+    }
+    const contentError = this.validateContent(this.content);
+    if (contentError) {
+      this.error = contentError;
+      return;
+    }
     const primaryUrl = `${forumGatewayPrefix()}/api/announcements`;
     const legacyUrl = `${forumGatewayPrefix()}/forum/announcements`;
     this.http.post(primaryUrl, { title: this.title, content: this.content }).pipe(
@@ -75,7 +87,7 @@ export class AnnouncementNewComponent {
 
   private handlePublishError(error: HttpErrorResponse): void {
     if (error.status === 403) {
-      this.error = "Acces refuse (403): role TEACHER requis cote backend.";
+      this.error = "Acces refuse (403): role TEACHER ou ADMIN requis cote backend.";
       return;
     }
     if (error.status === 401) {
@@ -92,5 +104,30 @@ export class AnnouncementNewComponent {
 
   cancel(): void {
     void this.router.navigate([this.announcementBasePath]);
+  }
+
+  private validateTitle(value: string): string | null {
+    const title = (value ?? '').trim();
+    if (!title) {
+      return 'Le titre est obligatoire.';
+    }
+    if (title.length < 4) {
+      return 'Le titre doit contenir au moins 4 caracteres.';
+    }
+    if (/\d/.test(title)) {
+      return 'Le titre ne doit pas contenir de chiffres.';
+    }
+    return null;
+  }
+
+  private validateContent(value: string): string | null {
+    const content = (value ?? '').trim();
+    if (!content) {
+      return 'Le contenu est obligatoire.';
+    }
+    if (content.length < 4) {
+      return 'Le contenu doit contenir au moins 4 caracteres.';
+    }
+    return null;
   }
 }

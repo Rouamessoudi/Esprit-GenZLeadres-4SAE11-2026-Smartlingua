@@ -10,6 +10,7 @@ public class SeanceDto {
 
     @NotBlank(message = "Le titre de la séance est obligatoire")
     @Size(min = 1, max = 255)
+    @Pattern(regexp = ".*\\D.*", message = "Le titre ne peut pas etre uniquement numerique")
     private String title;
 
     @NotNull(message = "La date et l'heure sont obligatoires")

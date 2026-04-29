@@ -10,7 +10,7 @@ import { AuthService } from '../../core/auth.service';
 
 type MessagingView = 'chat' | 'assistant' | 'translate';
 type ChatContact = { id: number; name: string; preview: string; active: boolean; status: string; role?: AppRole; conversationId?: number | null; peerId?: number };
-type ChatBubble = { sender: 'me' | 'other'; text: string; timestamp?: string };
+type ChatBubble = { id?: number; sender: 'me' | 'other'; text: string; timestamp?: string };
 type AppRole = 'ADMIN' | 'TEACHER' | 'STUDENT';
 type ChatUser = { id: number; username: string; status: string; role: AppRole };
 
@@ -22,7 +22,7 @@ type ChatUser = { id: number; username: string; status: string; role: AppRole };
     <section class="messaging-page">
       <header class="module-header">
         <h2>Messaging Module</h2>
-        <p>Chat, AI assistant, and translation in one place.</p>
+        <p>{{ connectedRole === 'ADMIN' ? 'Vue admin supervision des discussions teacher/student.' : 'Chat, AI assistant, and translation in one place.' }}</p>
       </header>
 
       <div class="messaging-shell">
@@ -76,11 +76,19 @@ type ChatUser = { id: number; username: string; status: string; role: AppRole };
             <div class="messages" id="chat-messages-container">
               <div class="bubble" *ngFor="let message of messages" [class.sent]="message.sender === 'me'" [class.received]="message.sender === 'other'">
                 {{ message.text }}
+                <button
+                  *ngIf="connectedRole === 'ADMIN' && message.id"
+                  type="button"
+                  class="delete-message"
+                  (click)="deleteMessageAsAdmin(message.id!)"
+                >
+                  Supprimer
+                </button>
               </div>
               <p class="empty-thread" *ngIf="messages.length === 0">Aucun message</p>
             </div>
             <footer>
-              <input type="text" placeholder="Ecris un message..." [(ngModel)]="draftMessage" (keydown.enter)="sendMessage()" />
+              <input type="text" placeholder="Ecris un message..." [(ngModel)]="draftMessage" (keydown.enter)="sendMessage()" [disabled]="connectedRole === 'ADMIN'" />
               <button type="button" (click)="sendMessage()" [disabled]="isSendingMessage || !canSendMessage()">Envoyer</button>
             </footer>
             <p class="error-text" *ngIf="chatError">{{ chatError }}</p>
@@ -425,6 +433,7 @@ type ChatUser = { id: number; username: string; status: string; role: AppRole };
       border-radius: 14px;
       padding: 8px 12px;
       max-width: 60%;
+      position: relative;
     }
     .bubble.sent {
       background: #6f5ee8;
@@ -437,6 +446,16 @@ type ChatUser = { id: number; username: string; status: string; role: AppRole };
     .chat-window footer button {
       margin-top: 0;
       white-space: nowrap;
+    }
+    .delete-message {
+      margin-left: 8px;
+      border: 1px solid #d66d5f;
+      color: #d66d5f;
+      background: #fff;
+      border-radius: 8px;
+      padding: 2px 8px;
+      font-size: 11px;
+      cursor: pointer;
     }
     .assistant-panel,
     .translate-panel {
@@ -730,6 +749,9 @@ export class MessagingPageComponent implements OnInit {
   }
 
   canSendMessage(): boolean {
+    if (this.connectedRole === 'ADMIN') {
+      return false;
+    }
     return !!this.draftMessage.trim() && this.activeChatContact() !== null;
   }
 
@@ -813,6 +835,20 @@ export class MessagingPageComponent implements OnInit {
     }
 
     sendNow(this.selectedConversationId);
+  }
+
+  deleteMessageAsAdmin(messageId: number): void {
+    if (this.connectedRole !== 'ADMIN') {
+      return;
+    }
+    this.messagingApi.deleteAdminMessage(messageId).subscribe({
+      next: () => {
+        this.messages = this.messages.filter((m) => m.id !== messageId);
+      },
+      error: (err) => {
+        this.chatError = this.describeChatError(err);
+      }
+    });
   }
 
   openNewConversationPicker(): void {
@@ -1232,6 +1268,7 @@ export class MessagingPageComponent implements OnInit {
     this.messagingApi.getConversationMessages(this.selectedConversationId).subscribe({
       next: (rows) => {
         this.messages = rows.map((row) => ({
+          id: row.id,
           sender: row.senderId === this.currentUserId() ? 'me' : 'other',
           text: row.content,
           timestamp: row.createdAt
@@ -1330,8 +1367,9 @@ export class MessagingPageComponent implements OnInit {
 
   private conversationToContact(c: MessagingConversationDto): ChatContact {
     const isTeacher = this.connectedRole === 'TEACHER';
-    const peerName = isTeacher ? c.studentName : c.teacherName;
-    const peerRole: AppRole = isTeacher ? 'STUDENT' : 'TEACHER';
+    const isAdmin = this.connectedRole === 'ADMIN';
+    const peerName = isAdmin ? `${c.teacherName} ↔ ${c.studentName}` : (isTeacher ? c.studentName : c.teacherName);
+    const peerRole: AppRole = isAdmin ? 'ADMIN' : (isTeacher ? 'STUDENT' : 'TEACHER');
     return {
       id: c.id,
       name: peerName,

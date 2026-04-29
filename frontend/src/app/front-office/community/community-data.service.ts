@@ -21,6 +21,7 @@ export type AppNotification = {
 
 const ANNOUNCEMENTS_KEY = 'smartlingua_announcements';
 const NOTIFICATIONS_KEY = 'smartlingua_notifications';
+const BROADCAST_NOTIFICATIONS_KEY = 'smartlingua_broadcast_notifications';
 
 @Injectable({ providedIn: 'root' })
 export class CommunityDataService {
@@ -117,6 +118,29 @@ export class CommunityDataService {
       read: false
     });
     localStorage.setItem(this.notificationKey(), JSON.stringify(list));
+  }
+
+  getBroadcastNotifications(): AppNotification[] {
+    const raw = localStorage.getItem(BROADCAST_NOTIFICATIONS_KEY);
+    const list: AppNotification[] = raw ? JSON.parse(raw) : [];
+    this.nextNotificationId = Math.max(this.nextNotificationId, Math.max(...list.map(n => n.id), 0) + 1);
+    return list.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+  }
+
+  createTeacherNotification(title: string): void {
+    const normalized = (title ?? '').trim();
+    if (!normalized) {
+      return;
+    }
+    const list = this.getBroadcastNotifications();
+    list.unshift({
+      id: this.nextNotificationId++,
+      title: normalized,
+      type: 'INFO',
+      createdAt: new Date().toISOString(),
+      read: false
+    });
+    localStorage.setItem(BROADCAST_NOTIFICATIONS_KEY, JSON.stringify(list));
   }
 
   private notificationKey(): string {

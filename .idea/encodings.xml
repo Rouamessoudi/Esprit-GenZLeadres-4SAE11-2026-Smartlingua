@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/backend/apiGateway/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/backend/backend/backEnd/eureka/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/backend/backend/backEnd/microservices/quiz/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/config-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/eureka/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/microservices/adaptive-learning/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/microservices/ai-assistant-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/microservices/courses/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/microservices/exams/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/microservices/forum/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/microservices/messaging/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/microservices/privetcours/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/microservices/quiz/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/microservices/users/src/main/java" charset="UTF-8" />
   </component>
 </project>

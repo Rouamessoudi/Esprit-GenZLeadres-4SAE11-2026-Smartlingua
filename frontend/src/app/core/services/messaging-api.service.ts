@@ -184,6 +184,10 @@ export class MessagingApiService {
     return this.http.get<MessagingConversationDto[]>(`${this.messagingBase()}/api/messaging/conversations`);
   }
 
+  getAdminConversations(): Observable<MessagingConversationDto[]> {
+    return this.http.get<MessagingConversationDto[]>(`${this.messagingBase()}/api/messaging/admin/conversations`);
+  }
+
   createRoleConversation(participantId: number): Observable<MessagingCreateConversationDto> {
     return this.http.post<MessagingCreateConversationDto>(`${this.messagingBase()}/api/messaging/conversations`, { participantId });
   }
@@ -192,12 +196,22 @@ export class MessagingApiService {
     return this.http.get<MessagingMessageDto[]>(`${this.messagingBase()}/api/messaging/conversations/${conversationId}/messages`);
   }
 
+  getAdminConversationMessages(teacherId: number, studentId: number): Observable<MessagingMessageDto[]> {
+    return this.http.get<MessagingMessageDto[]>(
+      `${this.messagingBase()}/api/messaging/admin/conversations/${teacherId}/${studentId}/messages`
+    );
+  }
+
   sendConversationMessage(conversationId: number, content: string): Observable<MessagingMessageDto> {
     return this.http.post<MessagingMessageDto>(`${this.messagingBase()}/api/messaging/conversations/${conversationId}/messages`, { content });
   }
 
   sendTeacherMessageToStudent(studentId: number, content: string): Observable<MessagingMessageDto> {
     return this.http.post<MessagingMessageDto>(`${this.messagingBase()}/api/messaging/teacher/students/${studentId}/messages`, { content });
+  }
+
+  deleteAdminMessage(messageId: number): Observable<void> {
+    return this.http.delete<void>(`${this.messagingBase()}/api/messaging/admin/messages/${messageId}`);
   }
 
   translateWithMyMemory(text: string, sourceLanguage: string, targetLanguage: string): Observable<MyMemoryResponse> {

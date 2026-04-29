@@ -16,7 +16,7 @@ export const teacherGuard: CanActivateFn = () => {
     }
 
     if (authService.isAdmin()) {
-        return router.createUrlTree(['/admin/dashboard']);
+        return true;
     }
 
     if (authService.isTeacher()) {

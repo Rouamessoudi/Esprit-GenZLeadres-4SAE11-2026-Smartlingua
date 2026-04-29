@@ -77,7 +77,9 @@ export class ForumPageComponent {
   };
 
   constructor(private http: HttpClient, private authService: AuthService) {
-    this.forumBasePath = this.authService.isTeacher() ? '/teacher/forum' : '/student/forum';
+    this.forumBasePath = this.authService.isAdmin()
+      ? '/admin/forum'
+      : (this.authService.isTeacher() ? '/teacher/forum' : '/student/forum');
     this.loadPosts();
   }
 
@@ -98,6 +100,16 @@ export class ForumPageComponent {
   }
 
   createPost(): void {
+    const titleError = this.validateTitle(this.draft.title);
+    if (titleError) {
+      this.error = titleError;
+      return;
+    }
+    const contentError = this.validateContent(this.draft.content);
+    if (contentError) {
+      this.error = contentError;
+      return;
+    }
     this.saving = true;
     this.http.post<ForumPost>(this.endpoint, { ...this.draft, author: this.authService.getUsername() }).subscribe({
       next: () => {
@@ -110,5 +122,30 @@ export class ForumPageComponent {
         this.error = `Unable to publish post (${err.status || 'error'}).`;
       }
     });
+  }
+
+  private validateTitle(value: string): string | null {
+    const title = (value ?? '').trim();
+    if (!title) {
+      return 'Le titre est obligatoire.';
+    }
+    if (title.length < 4) {
+      return 'Le titre doit contenir au moins 4 caracteres.';
+    }
+    if (/\d/.test(title)) {
+      return 'Le titre ne doit pas contenir de chiffres.';
+    }
+    return null;
+  }
+
+  private validateContent(value: string): string | null {
+    const content = (value ?? '').trim();
+    if (!content) {
+      return 'Le contenu est obligatoire.';
+    }
+    if (content.length < 4) {
+      return 'Le contenu doit contenir au moins 4 caracteres.';
+    }
+    return null;
   }
 }

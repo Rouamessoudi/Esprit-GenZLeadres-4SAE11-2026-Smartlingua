@@ -191,7 +191,14 @@ import { AuthService } from '../../core/auth.service';
               </button>
             </form>
             @if (seanceForm.get('title')?.invalid && seanceForm.get('title')?.touched) {
-              <span class="error-msg">Titre obligatoire.</span>
+              <span class="error-msg">
+                {{
+                  seanceForm.get('title')?.errors?.['required'] ? 'Le titre de la seance est obligatoire.' :
+                  seanceForm.get('title')?.errors?.['maxlength'] ? 'Le titre de la seance est trop long.' :
+                  seanceForm.get('title')?.errors?.['pattern'] ? 'Le titre de la seance ne peut pas etre uniquement numerique.' :
+                  'Titre invalide.'
+                }}
+              </span>
             }
 
             <div class="list-wrap">
@@ -343,12 +350,12 @@ export class CourseDetailComponent implements OnInit {
     private authService: AuthService
   ) {
     this.resourceForm = this.fb.group({
-      title: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(255)]],
+      title: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(255), Validators.pattern(/\D/)]],
       type: ['PDF', [Validators.required]],
       url: ['', [Validators.required, Validators.maxLength(500), Validators.pattern(/^https?:\/\/.+/)]]
     });
     this.seanceForm = this.fb.group({
-      title: ['', [Validators.required, Validators.maxLength(255)]],
+      title: ['', [Validators.required, Validators.maxLength(255), Validators.pattern(/\D/)]],
       startDateTime: ['', [Validators.required]],
       durationMinutes: [60, [Validators.required, Validators.min(1), Validators.max(480)]],
       description: ['']
@@ -439,6 +446,7 @@ export class CourseDetailComponent implements OnInit {
     if (c.errors['required']) return 'Le titre est obligatoire.';
     if (c.errors['minlength']) return 'Le titre doit faire au moins 2 caractères.';
     if (c.errors['maxlength']) return 'Le titre est trop long.';
+    if (c.errors['pattern']) return 'Le titre ne peut pas etre uniquement numerique.';
     return 'Titre invalide.';
   }
 

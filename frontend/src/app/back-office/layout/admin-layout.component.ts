@@ -20,6 +20,11 @@ import { AuthService } from '../../core/auth.service';
           <a routerLink="/admin/users" routerLinkActive="active" class="topbar-link">Users</a>
           <a routerLink="/admin/courses" routerLinkActive="active" class="topbar-link">Cours</a>
           <a routerLink="/admin/quiz" routerLinkActive="active" class="topbar-link">Quiz</a>
+          <a routerLink="/admin/forum" routerLinkActive="active" class="topbar-link">Forum</a>
+          <a routerLink="/admin/messaging" routerLinkActive="active" class="topbar-link">Messaging</a>
+          <a routerLink="/admin/announcements" routerLinkActive="active" class="topbar-link">Announcements</a>
+          <a routerLink="/admin/notifications" routerLinkActive="active" class="topbar-link">Notifications</a>
+          <a routerLink="/admin/monitoring" routerLinkActive="active" class="topbar-link">Monitoring</a>
           <a routerLink="/" class="topbar-link topbar-link-outline">Voir le site</a>
         </nav>
         <div class="topbar-right">

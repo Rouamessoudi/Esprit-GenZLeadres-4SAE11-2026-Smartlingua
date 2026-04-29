@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,6 +15,7 @@ public class CourseDto {
 
     @NotBlank(message = "Le titre est obligatoire")
     @Size(min = 2, max = 200)
+    @Pattern(regexp = ".*\\D.*", message = "Le titre ne peut pas etre uniquement numerique")
     private String title;
 
     @Size(max = 1000)

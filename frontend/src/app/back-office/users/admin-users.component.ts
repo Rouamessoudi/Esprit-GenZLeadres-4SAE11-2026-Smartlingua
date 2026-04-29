@@ -25,7 +25,8 @@ interface AdminUserDto {
     <section class="users-admin">
       <header>
         <h2>Utilisateurs inscrits</h2>
-        <p>Gestion des comptes (admin only): filtre, recherche, role, suppression.</p>
+        <p *ngIf="isAdminUser">Gestion des comptes (admin): filtre, recherche, role, suppression.</p>
+        <p *ngIf="isTeacherUser">Vue enseignant: liste des etudiants inscrits (lecture seule).</p>
       </header>
 
       <p class="error" *ngIf="error">{{ error }}</p>
@@ -66,7 +67,11 @@ interface AdminUserDto {
               <td>{{ user.firstName || '-' }}</td>
               <td>{{ user.lastName || '-' }}</td>
               <td>
-                <select [value]="user.role || 'STUDENT'" (change)="changeRole(user, ($any($event.target)).value)" [disabled]="isProtectedAdmin(user)">
+                <select
+                  [value]="user.role || 'STUDENT'"
+                  (change)="changeRole(user, ($any($event.target)).value)"
+                  [disabled]="!isAdminUser || isProtectedAdmin(user)"
+                >
                   <option value="STUDENT">STUDENT</option>
                   <option value="TEACHER">TEACHER</option>
                   <option value="ADMIN">ADMIN</option>
@@ -75,7 +80,7 @@ interface AdminUserDto {
               <td>{{ user.enabled === false ? 'Disabled' : 'Active' }}</td>
               <td>{{ user.createdAt ? (user.createdAt | date:'dd/MM/yyyy HH:mm') : '-' }}</td>
               <td>
-                <button class="danger" (click)="deleteUser(user)" [disabled]="isProtectedAdmin(user)">Supprimer</button>
+                <button class="danger" (click)="deleteUser(user)" [disabled]="!isAdminUser || isProtectedAdmin(user)">Supprimer</button>
               </td>
             </tr>
             <tr *ngIf="users.length === 0">
@@ -107,6 +112,8 @@ export class AdminUsersComponent implements OnInit {
   error = '';
   query = '';
   roleFilter = '';
+  isAdminUser = false;
+  isTeacherUser = false;
 
   constructor(
     private http: HttpClient,
@@ -114,8 +121,10 @@ export class AdminUsersComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    if (!this.authService.isAdmin()) {
-      this.error = 'Acces reserve aux admins.';
+    this.isAdminUser = this.authService.isAdmin();
+    this.isTeacherUser = this.authService.isTeacher();
+    if (!this.isAdminUser && !this.isTeacherUser) {
+      this.error = 'Acces reserve aux enseignants et admins.';
       return;
     }
     this.loadUsers();
@@ -132,6 +141,10 @@ export class AdminUsersComponent implements OnInit {
   }
 
   changeRole(user: AdminUserDto, role: string): void {
+    if (!this.isAdminUser) {
+      this.error = 'Seul un admin peut modifier les roles.';
+      return;
+    }
     this.http.put<AdminUserDto>(`${usersGatewayPrefix()}/api/admin/users/${user.id}/role`, { role }).subscribe({
       next: (updated) => {
         user.role = updated.role;
@@ -143,6 +156,10 @@ export class AdminUsersComponent implements OnInit {
   }
 
   deleteUser(user: AdminUserDto): void {
+    if (!this.isAdminUser) {
+      this.error = 'Seul un admin peut supprimer un utilisateur.';
+      return;
+    }
     if (!confirm(`Supprimer/desactiver ${user.username || user.email || 'cet utilisateur'} ?`)) {
       return;
     }
@@ -164,6 +181,10 @@ export class AdminUsersComponent implements OnInit {
 
   private loadUsers(): void {
     this.error = '';
+    if (!this.isAdminUser) {
+      this.loadTeacherStudentsReadOnly();
+      return;
+    }
     const params: string[] = [];
     if (this.roleFilter) params.push(`role=${encodeURIComponent(this.roleFilter)}`);
     if (this.query.trim()) params.push(`q=${encodeURIComponent(this.query.trim())}`);
@@ -174,6 +195,28 @@ export class AdminUsersComponent implements OnInit {
       },
       error: () => {
         this.error = 'Impossible de charger les utilisateurs admin.';
+      }
+    });
+  }
+
+  private loadTeacherStudentsReadOnly(): void {
+    this.http.get<AdminUserDto[]>(`${usersGatewayPrefix()}/api/users/all`).subscribe({
+      next: (data) => {
+        const all = Array.isArray(data) ? data : [];
+        const q = this.query.trim().toLowerCase();
+        this.users = all
+          .filter((u) => (u.role || 'STUDENT').toUpperCase() === 'STUDENT')
+          .filter((u) => {
+            if (!q) {
+              return true;
+            }
+            const username = (u.username || '').toLowerCase();
+            const email = (u.email || '').toLowerCase();
+            return username.includes(q) || email.includes(q);
+          });
+      },
+      error: () => {
+        this.error = 'Impossible de charger la liste des etudiants.';
       }
     });
   }

@@ -9,6 +9,7 @@ public class ResourceDto {
 
     @NotBlank(message = "Le titre de la ressource est obligatoire")
     @Size(min = 2, max = 255, message = "Le titre doit contenir entre 2 et 255 caractères")
+    @Pattern(regexp = ".*\\D.*", message = "Le titre ne peut pas etre uniquement numerique")
     private String title;
 
     @NotNull(message = "Le type est obligatoire (PDF, VIDEO, AUDIO)")

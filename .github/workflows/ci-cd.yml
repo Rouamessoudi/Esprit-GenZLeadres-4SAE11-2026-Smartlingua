@@ -47,7 +47,7 @@ jobs:
         working-directory: ${{ matrix.service }}
 
       - name: Build package
-        run: mvn clean package
+        run: mvn clean install
         working-directory: ${{ matrix.service }}
 
       - name: Generate JaCoCo report

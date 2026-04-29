@@ -267,6 +267,58 @@ export const routes: Routes = [
                 loadComponent: () =>
                     import('./back-office/adaptive/teacher-adaptive-dashboard.component').then(m => m.TeacherAdaptiveDashboardComponent),
             },
+            {
+                path: 'messaging',
+                loadComponent: () =>
+                    import('./back-office/messaging/admin-messaging-supervision.component').then(
+                        m => m.AdminMessagingSupervisionComponent
+                    ),
+            },
+            {
+                path: 'forum',
+                loadComponent: () =>
+                    import('./front-office/forum/forum-page.component').then(m => m.ForumPageComponent),
+            },
+            {
+                path: 'forum/:id',
+                loadComponent: () =>
+                    import('./front-office/forum/forum-detail.component').then(m => m.ForumDetailComponent),
+            },
+            {
+                path: 'announcements',
+                loadComponent: () =>
+                    import('./front-office/announcements/announcements-list.component').then(
+                        m => m.AnnouncementsListComponent
+                    ),
+            },
+            {
+                path: 'announcements/new',
+                loadComponent: () =>
+                    import('./front-office/announcements/announcement-new.component').then(
+                        m => m.AnnouncementNewComponent
+                    ),
+            },
+            {
+                path: 'announcements/:id',
+                loadComponent: () =>
+                    import('./front-office/announcements/announcement-detail.component').then(
+                        m => m.AnnouncementDetailComponent
+                    ),
+            },
+            {
+                path: 'notifications',
+                loadComponent: () =>
+                    import('./front-office/notifications/notifications-page.component').then(
+                        m => m.NotificationsPageComponent
+                    ),
+            },
+            {
+                path: 'monitoring',
+                loadComponent: () =>
+                    import('./back-office/monitoring/admin-monitoring.component').then(
+                        m => m.AdminMonitoringComponent
+                    ),
+            },
         ],
     },
     {

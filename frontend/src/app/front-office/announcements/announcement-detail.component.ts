@@ -51,7 +51,9 @@ export class AnnouncementDetailComponent {
   constructor(route: ActivatedRoute, private http: HttpClient, private authService: AuthService, private router: Router, private community: CommunityDataService) {
     this.id = Number(route.snapshot.paramMap.get('id'));
     this.canManage = this.authService.isTeacher() || this.authService.isAdmin();
-    this.announcementsPath = this.authService.isTeacher() ? '/teacher/announcements' : '/student/announcements';
+    this.announcementsPath = this.authService.isAdmin()
+      ? '/admin/announcements'
+      : (this.authService.isTeacher() ? '/teacher/announcements' : '/student/announcements');
     this.loadItem();
   }
 

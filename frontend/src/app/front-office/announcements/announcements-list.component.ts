@@ -54,7 +54,9 @@ export class AnnouncementsListComponent {
 
   constructor(private http: HttpClient, private authService: AuthService) {
     this.canManageAnnouncements = this.authService.isTeacher() || this.authService.isAdmin();
-    this.announcementBasePath = this.authService.isTeacher() ? '/teacher/announcements' : '/student/announcements';
+    this.announcementBasePath = this.authService.isAdmin()
+      ? '/admin/announcements'
+      : (this.authService.isTeacher() ? '/teacher/announcements' : '/student/announcements');
     this.newAnnouncementLink = `${this.announcementBasePath}/new`;
     this.loadAnnouncements();
   }

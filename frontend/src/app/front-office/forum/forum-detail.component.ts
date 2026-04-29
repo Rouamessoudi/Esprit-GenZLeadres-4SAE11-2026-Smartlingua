@@ -25,14 +25,19 @@ type LocalComment = { text: string; createdAt: string };
   template: `
     <a [routerLink]="forumBasePath" class="back">← Retour</a>
     <section class="post" *ngIf="post">
-      <h2>{{ post.title }}</h2>
+      <h2 *ngIf="!editing">{{ post.title }}</h2>
+      <input *ngIf="editing" [(ngModel)]="draftTitle" />
       <small>{{ post.authorUsername || 'Utilisateur inconnu' }} • {{ post.createdAt | date:'medium' }}</small>
       <small class="moderated" *ngIf="post.moderated">Ce post a ete modere</small>
-      <p>{{ post.content }}</p>
+      <p *ngIf="!editing">{{ post.content }}</p>
+      <textarea *ngIf="editing" [(ngModel)]="draftContent" rows="5"></textarea>
       <div class="actions">
         <button>Signaler</button>
-        <button *ngIf="isTeacher" (click)="moderatePost()">Moderer</button>
-        <button *ngIf="isTeacher" (click)="deletePost()" class="danger">Supprimer</button>
+        <button *ngIf="canModerate && !editing" (click)="startEdit()">Modifier</button>
+        <button *ngIf="canModerate && editing" (click)="saveEdit()">Enregistrer</button>
+        <button *ngIf="canModerate && editing" (click)="cancelEdit()">Annuler</button>
+        <button *ngIf="canModerate" (click)="moderatePost()">Moderer</button>
+        <button *ngIf="canModerate" (click)="deletePost()" class="danger">Supprimer</button>
       </div>
     </section>
 
@@ -67,13 +72,20 @@ export class ForumDetailComponent {
   private storageKey = '';
   forumBasePath = '/student/forum';
   isTeacher = false;
+  isAdmin = false;
+  canModerate = false;
+  editing = false;
+  draftTitle = '';
+  draftContent = '';
   private postId = 0;
 
   constructor(route: ActivatedRoute, private http: HttpClient, private authService: AuthService, private router: Router, private community: CommunityDataService) {
     const id = Number(route.snapshot.paramMap.get('id'));
     this.postId = id;
     this.isTeacher = this.authService.isTeacher();
-    this.forumBasePath = this.isTeacher ? '/teacher/forum' : '/student/forum';
+    this.isAdmin = this.authService.isAdmin();
+    this.canModerate = this.isTeacher || this.isAdmin;
+    this.forumBasePath = this.isAdmin ? '/admin/forum' : (this.isTeacher ? '/teacher/forum' : '/student/forum');
     this.storageKey = `forum_comments_${id}`;
     this.comments = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
     this.http.get<ForumPost>(`${forumGatewayPrefix()}/forum/posts/${id}`).subscribe({
@@ -90,8 +102,37 @@ export class ForumDetailComponent {
     this.newComment = '';
   }
 
+  startEdit(): void {
+    if (!this.post || !this.canModerate) {
+      return;
+    }
+    this.editing = true;
+    this.draftTitle = this.post.title;
+    this.draftContent = this.post.content;
+  }
+
+  cancelEdit(): void {
+    this.editing = false;
+  }
+
+  saveEdit(): void {
+    if (!this.canModerate || !this.postId) {
+      return;
+    }
+    this.http.put<ForumPost>(`${forumGatewayPrefix()}/forum/posts/${this.postId}`, {
+      title: this.draftTitle,
+      content: this.draftContent
+    }).subscribe({
+      next: (updated) => {
+        this.post = updated;
+        this.editing = false;
+        this.community.addInfoNotification('Post mis a jour.', 'FORUM');
+      }
+    });
+  }
+
   moderatePost(): void {
-    if (!this.isTeacher || !this.postId) {
+    if (!this.canModerate || !this.postId) {
       return;
     }
     this.http.post<ForumPost>(`${forumGatewayPrefix()}/forum/posts/${this.postId}/moderate`, {}).subscribe({
@@ -103,7 +144,7 @@ export class ForumDetailComponent {
   }
 
   deletePost(): void {
-    if (!this.isTeacher || !this.postId) {
+    if (!this.canModerate || !this.postId) {
       return;
     }
     this.http.delete(`${forumGatewayPrefix()}/forum/posts/${this.postId}`).subscribe({
