@@ -8,6 +8,21 @@ jobs:
   backend:
     name: Backend - ${{ matrix.service }}
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: smartlingua
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      SPRING_PROFILES_ACTIVE: ci
     strategy:
       fail-fast: false
       matrix:
@@ -34,6 +49,11 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: maven
+
+      - name: Initialize MySQL database
+        run: |
+          docker cp .github/sql/ci-init.sql "${{ job.services.mysql.id }}:/tmp/ci-init.sql"
+          docker exec "${{ job.services.mysql.id }}" sh -c "mysql -uroot -proot < /tmp/ci-init.sql"
 
       - name: Build with Maven
         run: mvn clean install
