@@ -8,6 +8,19 @@ jobs:
   backend:
     name: Backend - ${{ matrix.service }}
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: smartlingua
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     strategy:
       fail-fast: false
       matrix:
@@ -35,12 +48,40 @@ jobs:
           java-version: "17"
           cache: maven
 
+      - name: Initialize MySQL database
+        run: |
+          docker cp .github/sql/ci-init.sql "${{ job.services.mysql.id }}:/tmp/ci-init.sql"
+          docker exec "${{ job.services.mysql.id }}" sh -c "mysql -uroot -proot < /tmp/ci-init.sql"
+
+      # config-server / gateway / eureka: no DB — forcing spring.profiles.active=ci breaks config-server
+      # (native profile lost → Cloud Config expects git.uri). DB microservices keep ci for MySQL.
       - name: Build with Maven
-        run: mvn clean install
         working-directory: ${{ matrix.service }}
+        run: |
+          set -e
+          case "${{ matrix.service }}" in
+            backend/config-server|backend/apiGateway|backend/eureka) MAVEN_CI="" ;;
+            *) MAVEN_CI="-Dspring.profiles.active=ci" ;;
+          esac
+          mvn clean install $MAVEN_CI
 
       - name: Run unit tests
-        run: mvn test
+        working-directory: ${{ matrix.service }}
+        run: |
+          set -e
+          case "${{ matrix.service }}" in
+            backend/config-server|backend/apiGateway|backend/eureka) MAVEN_CI="" ;;
+            *) MAVEN_CI="-Dspring.profiles.active=ci" ;;
+          esac
+          mvn test $MAVEN_CI
+
+      - name: Show Surefire reports on failure
+        if: failure()
+        run: |
+          echo "===== Surefire reports ====="
+          ls -la target/surefire-reports || true
+          cat target/surefire-reports/*.txt || true
+          cat target/surefire-reports/*.dumpstream || true
         working-directory: ${{ matrix.service }}
 
   frontend:
@@ -67,4 +108,4 @@ jobs:
         run: npm run build
 
       - name: Run tests
-        run: npm test --if-present
+        run: npm test --if-present -- --watch=false --browsers=ChromeHeadless

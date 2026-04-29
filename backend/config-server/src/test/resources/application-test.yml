@@ -1,0 +1,18 @@
+# Profil test : pas de dépendances externes (Eureka, dépôt Git), port aléatoire pour CI.
+server:
+  port: 0
+
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          enabled: false
+        native:
+          search-locations: classpath:/config/
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false

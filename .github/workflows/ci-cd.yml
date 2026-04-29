@@ -15,6 +15,19 @@ jobs:
   backend-ci:
     name: Backend CI - ${{ matrix.service }}
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: smartlingua
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     strategy:
       fail-fast: false
       matrix:
@@ -42,16 +55,43 @@ jobs:
           java-version: "17"
           cache: maven
 
+      - name: Initialize MySQL database
+        run: |
+          docker cp .github/sql/ci-init.sql "${{ job.services.mysql.id }}:/tmp/ci-init.sql"
+          docker exec "${{ job.services.mysql.id }}" sh -c "mysql -uroot -proot < /tmp/ci-init.sql"
+
+      # Same as ci.yml: do not force ci profile on config-server / gateway / eureka (native + no git.uri).
       - name: Run unit tests
-        run: mvn test
         working-directory: ${{ matrix.service }}
+        run: |
+          set -e
+          case "${{ matrix.service }}" in
+            backend/config-server|backend/apiGateway|backend/eureka) MAVEN_CI="" ;;
+            *) MAVEN_CI="-Dspring.profiles.active=ci" ;;
+          esac
+          mvn test $MAVEN_CI
 
       - name: Build package
-        run: mvn clean install
         working-directory: ${{ matrix.service }}
+        run: |
+          set -e
+          case "${{ matrix.service }}" in
+            backend/config-server|backend/apiGateway|backend/eureka) MAVEN_CI="" ;;
+            *) MAVEN_CI="-Dspring.profiles.active=ci" ;;
+          esac
+          mvn clean install $MAVEN_CI
 
       - name: Generate JaCoCo report
         run: mvn jacoco:report
+        working-directory: ${{ matrix.service }}
+
+      - name: Show Surefire reports on failure
+        if: failure()
+        run: |
+          echo "===== Surefire reports ====="
+          ls -la target/surefire-reports || true
+          cat target/surefire-reports/*.txt || true
+          cat target/surefire-reports/*.dumpstream || true
         working-directory: ${{ matrix.service }}
 
   frontend-ci:
@@ -78,13 +118,33 @@ jobs:
         run: npm run build
 
       - name: Run frontend unit tests
-        run: npm test --if-present
+        run: npm test --if-present -- --watch=false --browsers=ChromeHeadless
 
+  # Sans SONAR_TOKEN + SONAR_HOST_URL dans GitHub → Secrets, sonar:sonar échoue pour chaque module.
+  # On n'exécute ce job que si les deux secrets sont définis (sinon checks ignorés, pas en échec).
   sonar-backend:
     name: SonarQube - ${{ matrix.service }}
     runs-on: ubuntu-latest
     needs: [backend-ci, frontend-ci]
-    if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
+    if: >-
+      ${{
+        (github.event_name == 'push' || github.event_name == 'pull_request') &&
+        secrets.SONAR_TOKEN != '' &&
+        secrets.SONAR_HOST_URL != ''
+      }}
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: smartlingua
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     strategy:
       fail-fast: false
       matrix:
@@ -114,13 +174,36 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: SonarQube analysis with JaCoCo coverage
-        run: >
-          mvn clean verify sonar:sonar
-          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
-          -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+      - name: Initialize MySQL database
+        run: |
+          docker cp .github/sql/ci-init.sql "${{ job.services.mysql.id }}:/tmp/ci-init.sql"
+          docker exec "${{ job.services.mysql.id }}" sh -c "mysql -uroot -proot < /tmp/ci-init.sql"
+
+      - name: Build with tests and JaCoCo (verify)
         working-directory: ${{ matrix.service }}
+        run: |
+          set -e
+          case "${{ matrix.service }}" in
+            backend/config-server|backend/apiGateway|backend/eureka) MAVEN_CI="" ;;
+            *) MAVEN_CI="-Dspring.profiles.active=ci" ;;
+          esac
+          mvn clean verify $MAVEN_CI
+
+      - name: SonarQube analysis
+        working-directory: ${{ matrix.service }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          set -e
+          case "${{ matrix.service }}" in
+            backend/config-server|backend/apiGateway|backend/eureka) MAVEN_CI="" ;;
+            *) MAVEN_CI="-Dspring.profiles.active=ci" ;;
+          esac
+          mvn sonar:sonar $MAVEN_CI \
+            -Dsonar.host.url="$SONAR_HOST_URL" \
+            -Dsonar.token="$SONAR_TOKEN" \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
   cd-simulated:
     name: CD - Simulated deployment

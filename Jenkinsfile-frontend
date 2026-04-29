@@ -1,0 +1,83 @@
+pipeline {
+  agent any
+
+  tools {
+    nodejs 'node20'
+  }
+
+  environment {
+    CHROME_BIN = '/usr/bin/google-chrome'
+    SONAR_PROJECT_KEY = 'smartlingua-frontend'
+  }
+
+  options {
+    timestamps()
+    ansiColor('xterm')
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Install') {
+      steps {
+        dir('frontend') {
+          sh 'npm install'
+        }
+      }
+    }
+
+    stage('Build') {
+      steps {
+        dir('frontend') {
+          sh 'npm run build'
+        }
+      }
+    }
+
+    stage('Test') {
+      steps {
+        dir('frontend') {
+          sh 'npm test -- --watch=false --browsers=ChromeHeadless --code-coverage'
+        }
+      }
+      post {
+        always {
+          junit allowEmptyResults: true, testResults: 'frontend/**/TESTS-*.xml'
+          archiveArtifacts allowEmptyArchive: true, artifacts: 'frontend/coverage/**'
+        }
+      }
+    }
+
+    stage('SonarQube Frontend') {
+      steps {
+        withSonarQubeEnv('sonarqube') {
+          sh '''
+            set -e
+            sonar-scanner \
+              -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+              -Dsonar.projectName=SmartLingua Frontend \
+              -Dsonar.sources=frontend/src \
+              -Dsonar.tests=frontend/src \
+              -Dsonar.test.inclusions=**/*.spec.ts \
+              -Dsonar.exclusions=**/node_modules/**,**/dist/** \
+              -Dsonar.javascript.lcov.reportPaths=frontend/coverage/**/lcov.info \
+              -Dsonar.typescript.tsconfigPath=frontend/tsconfig.json
+          '''
+        }
+      }
+    }
+  }
+
+  post {
+    success {
+      echo 'Frontend CI pipeline completed successfully.'
+    }
+    failure {
+      echo 'Frontend CI pipeline failed. Check npm build/test logs.'
+    }
+  }
+}
