@@ -1,0 +1,98 @@
+pipeline {
+  agent any
+
+  tools {
+    jdk 'jdk17'
+    maven 'maven3'
+  }
+
+  environment {
+    SONAR_PROJECT_KEY = 'smartlingua-backend'
+  }
+
+  options {
+    timestamps()
+    ansiColor('xterm')
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Backend CI') {
+      steps {
+        script {
+          def services = [
+            'backend/apiGateway',
+            'backend/config-server',
+            'backend/eureka',
+            'backend/microservices/users',
+            'backend/microservices/forum',
+            'backend/microservices/messaging',
+            'backend/microservices/courses',
+            'backend/microservices/quiz',
+            'backend/microservices/exams',
+            'backend/microservices/adaptive-learning',
+            'backend/microservices/ai-assistant-service',
+            'backend/microservices/privetcours'
+          ]
+
+          def branches = [:]
+          for (int i = 0; i < services.size(); i++) {
+            def svc = services[i]
+            branches[svc] = {
+              dir(svc) {
+                sh '''
+                  set -e
+                  if [ -x "./mvnw" ]; then
+                    ./mvnw test
+                    ./mvnw clean package
+                  else
+                    mvn test
+                    mvn clean package
+                  fi
+                '''
+              }
+            }
+          }
+          parallel branches
+        }
+      }
+      post {
+        always {
+          junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+          archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/*.jar,**/target/site/jacoco/*.xml'
+        }
+      }
+    }
+
+    stage('SonarQube Backend') {
+      steps {
+        withSonarQubeEnv('sonarqube') {
+          sh '''
+            set -e
+            mvn -f backend/apiGateway/pom.xml clean verify sonar:sonar \
+              -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+              -Dsonar.projectName=SmartLingua Backend \
+              -Dsonar.sources=backend \
+              -Dsonar.tests=backend \
+              -Dsonar.exclusions=**/target/**,**/.mvn/** \
+              -Dsonar.coverage.jacoco.xmlReportPaths=backend/**/target/site/jacoco/jacoco.xml
+          '''
+        }
+      }
+    }
+  }
+
+  post {
+    success {
+      echo 'Backend CI pipeline completed successfully.'
+    }
+    failure {
+      echo 'Backend CI pipeline failed. Check test and build logs.'
+    }
+  }
+}
