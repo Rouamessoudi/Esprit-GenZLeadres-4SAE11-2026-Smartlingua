@@ -10,15 +10,15 @@ pipeline {
 
   options {
     timestamps()
+    disableConcurrentBuilds()
+  }
+
+  parameters {
+    string(name: 'DEPLOY_PATH', defaultValue: '/opt/smartlingua', description: 'Frontend deployment path on target server')
+    string(name: 'DEPLOY_BRANCH', defaultValue: 'main', description: 'Git branch to deploy on target server')
   }
 
   stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
-    }
-
     stage('Install') {
       steps {
         dir('frontend') {
@@ -67,14 +67,47 @@ pipeline {
         }
       }
     }
+
+    stage('Deploy Frontend') {
+      when {
+        anyOf {
+          branch 'main'
+          expression { return env.BRANCH_NAME == null } // Classic pipeline mode
+        }
+      }
+      steps {
+        withCredentials([
+          string(credentialsId: 'frontend-deploy-host', variable: 'DEPLOY_HOST'),
+          string(credentialsId: 'frontend-deploy-user', variable: 'DEPLOY_USER'),
+          sshUserPrivateKey(credentialsId: 'frontend-deploy-ssh-key', keyFileVariable: 'SSH_KEY')
+        ]) {
+          sh '''
+            set -e
+            ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" '
+              set -e
+              cd "${DEPLOY_PATH}"
+              git fetch --all
+              git checkout "${DEPLOY_BRANCH}"
+              git pull origin "${DEPLOY_BRANCH}"
+              if [ -f "docker-compose.yml" ]; then
+                docker compose -f docker-compose.yml pull || true
+                docker compose -f docker-compose.yml up -d
+              else
+                echo "No root docker-compose.yml found; frontend deploy finished with git update only."
+              fi
+            '
+          '''
+        }
+      }
+    }
   }
 
   post {
     success {
-      echo 'Frontend CI pipeline completed successfully.'
+      echo 'Frontend CI/CD pipeline completed successfully.'
     }
     failure {
-      echo 'Frontend CI pipeline failed. Check npm build/test logs.'
+      echo 'Frontend CI/CD pipeline failed. Check logs.'
     }
   }
 }

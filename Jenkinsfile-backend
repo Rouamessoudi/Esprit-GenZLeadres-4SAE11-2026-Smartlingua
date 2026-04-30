@@ -9,15 +9,15 @@ pipeline {
 
   options {
     timestamps()
+    disableConcurrentBuilds()
+  }
+
+  parameters {
+    string(name: 'DEPLOY_PATH', defaultValue: '/opt/smartlingua', description: 'Backend deployment path on target server')
+    string(name: 'DEPLOY_BRANCH', defaultValue: 'main', description: 'Git branch to deploy on target server')
   }
 
   stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
-    }
-
     stage('Test') {
       steps {
         script {
@@ -118,14 +118,43 @@ pipeline {
         }
       }
     }
+
+    stage('Deploy Backend') {
+      when {
+        anyOf {
+          branch 'main'
+          expression { return env.BRANCH_NAME == null } // Classic pipeline mode
+        }
+      }
+      steps {
+        withCredentials([
+          string(credentialsId: 'backend-deploy-host', variable: 'DEPLOY_HOST'),
+          string(credentialsId: 'backend-deploy-user', variable: 'DEPLOY_USER'),
+          sshUserPrivateKey(credentialsId: 'backend-deploy-ssh-key', keyFileVariable: 'SSH_KEY')
+        ]) {
+          sh '''
+            set -e
+            ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no "$DEPLOY_USER@$DEPLOY_HOST" '
+              set -e
+              cd "${DEPLOY_PATH}"
+              git fetch --all
+              git checkout "${DEPLOY_BRANCH}"
+              git pull origin "${DEPLOY_BRANCH}"
+              docker compose -f backend/docker-compose.yml pull || true
+              docker compose -f backend/docker-compose.yml up -d
+            '
+          '''
+        }
+      }
+    }
   }
 
   post {
     success {
-      echo 'Backend CI pipeline completed successfully.'
+      echo 'Backend CI/CD pipeline completed successfully.'
     }
     failure {
-      echo 'Backend CI pipeline failed. Check test and build logs.'
+      echo 'Backend CI/CD pipeline failed. Check logs.'
     }
   }
 }
